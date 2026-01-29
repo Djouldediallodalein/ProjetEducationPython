@@ -1,6 +1,7 @@
 ## Fichier contenant toutes les fonctions utilitaires pour l'application d'apprentissage
 
-import ollama 
+import ollama
+import random 
 
 
 def generer_exercice(niveau, theme):
@@ -95,4 +96,66 @@ Pas d\'explication, juste UN mot : BON ou MAUVAIS'''
         print(f"Réponse reçue : {reponse_ia}")
     
     return avancer
+
+
+
+
+def choisir_theme_aleatoire():
+    """Retourne un thème aléatoire parmi les 10 thèmes disponibles"""
+    themes = [
+        'Variables et types de données',
+        'Conditions (if/elif/else)',
+        'Boucles (for/while)',
+        'Fonctions',
+        'Listes et tuples',
+        'Dictionnaires',
+        'Manipulation de strings',
+        'Fichiers (lecture/écriture)',
+        'Gestion des erreurs (try/except)',
+        'Programmation orientée objet (classes)'
+    ]
+    theme_selectionne = random.choice(themes)
+    print(f"Theme aleatoire selectionne : {theme_selectionne}")
+    return theme_selectionne
+
+
+
+def choisir_theme():
+    """Permet à l'utilisateur de choisir un thème d'exercice"""
+    themes_disponibles = {
+        '1': 'Variables et types de données',
+        '2': 'Conditions (if/elif/else)',
+        '3': 'Boucles (for/while)',
+        '4': 'Fonctions',
+        '5': 'Listes et tuples',
+        '6': 'Dictionnaires',
+        '7': 'Manipulation de strings',
+        '8': 'Fichiers (lecture/écriture)',
+        '9': 'Gestion des erreurs (try/except)',
+        '10': 'Programmation orientée objet (classes)'
+    }
+    
+    print("\nCHOIX DU THEME D'APPRENTISSAGE")
+    print("="*50)
+    
+    for key, value in themes_disponibles.items():
+        print(f"{key}. {value}")
+    
+    print("\n11. Theme aleatoire")
+    print("0. Retour au menu principal")
+    print("="*50)
+    
+    choix_theme = input("\nChoisissez un theme (1-11 ou 0 pour retourner) : ")
+    
+    if choix_theme == '0':
+        return None
+    elif choix_theme == '11':
+        return choisir_theme_aleatoire()
+    elif choix_theme in themes_disponibles:
+        theme_selectionne = themes_disponibles[choix_theme]
+        print(f"Theme selectionne : {theme_selectionne}")
+        return theme_selectionne
+    else:
+        print("Choix invalide ! Veuillez reessayer.")
+        return choisir_theme()
 

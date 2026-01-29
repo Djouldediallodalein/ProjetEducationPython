@@ -1,86 +1,69 @@
 ## Programme principal pour une application simple
 
-from fonctions import generer_exercice, verifier_reponse, analyser_verdict
+from fonctions import generer_exercice, verifier_reponse, analyser_verdict, choisir_theme
 
 niveau = 2
 
-# Liste des thèmes disponibles
-themes_disponibles = {
-    '1': 'Variables et types de données',
-    '2': 'Conditions (if/elif/else)',
-    '3': 'Boucles (for/while)',
-    '4': 'Fonctions',
-    '5': 'Listes et tuples',
-    '6': 'Dictionnaires',
-    '7': 'Manipulation de strings',
-    '8': 'Fichiers (lecture/écriture)',
-    '9': 'Gestion des erreurs (try/except)',
-    '10': 'Programmation orientée objet (classes)',
-    '0': 'Thème personnalisé'
-}
-
-def choisir_theme():
-    """Permet à l'utilisateur de choisir un thème d'exercice"""
-    print("L'objectif est d'apprendre python en resolvant des exos par theme.\nCHOIX DU THÈME D'APPRENTISSAGE")
-    
-    for key, value in themes_disponibles.items():
-        if key == '0':
-            print(f"\n{key}.{value}")
-        else:
-            print(f"{key}.{value}")
-    
-    print("="*50)
-    
-    choix_theme = input("\nChoisissez un thème (1-10 ou 0 pour personnaliser) : ")
-    
-    if choix_theme in themes_disponibles and choix_theme != '0':
-        theme_selectionne = themes_disponibles[choix_theme]
-        print(f"Thème sélectionné : {theme_selectionne}")
-        return theme_selectionne
-    elif choix_theme == '0':
-        theme_personnalise = input("Entrez votre thème personnalisé : ")
-        print(f"Thème personnalisé : {theme_personnalise}")
-        return theme_personnalise
-    else:
-        print("Choix invalide ! Thème par défaut : Conditions")
-        return "Conditions (if/elif/else)"
-
-# Sélection du thème au démarrage
-theme = choisir_theme()
-
     
 if __name__ == "__main__":
-    print("Bienvenue !")
+    print("\nBienvenue dans l'apprentissage Python par exercices !")
+    print("L'objectif est d'apprendre Python en resolvant des exercices par theme.")
+    print("="*60)
+    
     choix = 0
     
-    while choix != 3 :
+    while choix != 3:
+        print("\nMENU PRINCIPAL")
+        print("="*60)
         try:
-            choix = int(input("Veillez choisir une option :\n1. Commencer les exercices\n2. Voir ma progression\n3. Quitter\n"))
+            choix = int(input("Veuillez choisir une option :\n1. Commencer les exercices\n2. Voir ma progression\n3. Quitter\n\nVotre choix : "))
         except ValueError:
-            print("Entrez juste le numéro (1, 2 ou 3)")
+            print("Erreur : Entrez uniquement un numero (1, 2 ou 3)")
             continue
-        print("Vous avez choisi :", choix)
         
-        if choix == 1 :
-            print("Lancement des exercices")
+        if choix == 1:
+            theme = choisir_theme()
             
-            exercice = generer_exercice(niveau, theme) # On génére l'exercice
+            if theme is None:
+                print("Retour au menu principal...")
+                continue
+            
+            print("\n" + "="*60)
+            print("EXERCICE")
+            print("="*60)
+            
+            exercice = generer_exercice(niveau, theme)
             print(exercice)
+            print("\n" + "-"*60)
             
-            solution = input("veillez entrer la solution de l'exercice :")
-            print("\nVoici la verification :\n")
-            verification = verifier_reponse(exercice,solution)
+            solution = input("\nVeuillez entrer votre solution Python :\n")
+            
+            print("\n" + "="*60)
+            print("VERIFICATION")
+            print("="*60)
+            verification = verifier_reponse(exercice, solution)
             print(verification)
             
             avancement = analyser_verdict(verification)
-            print(avancement)
             
+            if avancement:
+                print("\nResultat : EXERCICE REUSSI !")
+            else:
+                print("\nResultat : Reessayez, vous pouvez y arriver !")
             
-        elif choix == 2 : 
-            print("Affichage de la progression") 
-        elif choix == 3 : 
-            print("Au revoir")
-        else :
-            print("Choix Invalide")
+        elif choix == 2:
+            print("\n" + "="*60)
+            print("PROGRESSION")
+            print("="*60)
+            print("Fonctionnalite en cours de developpement...")
+            
+        elif choix == 3:
+            print("\n" + "="*60)
+            print("Merci d'avoir utilise l'application !")
+            print("A bientot pour de nouveaux exercices.")
+            print("="*60)
+            
+        else:
+            print("Erreur : Choix invalide. Veuillez choisir 1, 2 ou 3.")
                        
     
