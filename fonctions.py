@@ -23,7 +23,7 @@ Exemple : "Écrivez une fonction qui prend un nombre en paramètre et retourne T
 Énoncé :'''
     }
 ]
-    response = ollama.chat(model='qwen2.5:3b', messages = messages)
+    response = ollama.chat(model='qwen2.5-coder:14b', messages = messages)
     return response['message']['content']
 
 
@@ -56,7 +56,7 @@ Réponse (15 mots max) :
     }
 ]
     
-    correction = ollama.chat(model='qwen2.5:3b', messages = messages)
+    correction = ollama.chat(model='qwen2.5-coder:14b', messages = messages)
     return correction['message']['content']
     
 
@@ -83,7 +83,7 @@ Pas d\'explication, juste UN mot : BON ou MAUVAIS'''
     }
 ]
     
-    reponse = ollama.chat(model='qwen2.5:3b', messages = messages)
+    reponse = ollama.chat(model='qwen2.5-coder:14b', messages = messages)
     reponse_ia = reponse['message']['content']
     
     if 'BON' in reponse_ia.upper():
