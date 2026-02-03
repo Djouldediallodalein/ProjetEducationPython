@@ -1,8 +1,10 @@
 ## Programme principal pour une application simple
 
 from fonctions import generer_exercice, verifier_reponse, analyser_verdict, choisir_theme
+from progression import charger_progression, mettre_a_jour_progression, afficher_progression
 
-niveau = 2
+progression = charger_progression()
+niveau = progression['niveau']
 
     
 if __name__ == "__main__":
@@ -51,11 +53,10 @@ if __name__ == "__main__":
             else:
                 print("\nResultat : Reessayez, vous pouvez y arriver !")
             
+            mettre_a_jour_progression(theme, avancement)
+            
         elif choix == 2:
-            print("\n" + "="*60)
-            print("PROGRESSION")
-            print("="*60)
-            print("Fonctionnalite en cours de developpement...")
+            afficher_progression()
             
         elif choix == 3:
             print("\n" + "="*60)
