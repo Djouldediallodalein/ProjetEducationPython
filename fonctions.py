@@ -68,34 +68,12 @@ Réponse (15 mots max) :
 def analyser_verdict(correction):
     """Cette fonction permet de gerer le verdict de l'ia sur la reponse de l'etudiant"""
     
-    avancer = False
-    messages = [
-    {
-        'role': 'user',
-        'content': f'''Voici la correction d\'un exercice :
-
-{correction}
-
-RÉPONDS UNIQUEMENT PAR UN SEUL MOT : BON ou MAUVAIS
-BON = si le code de l\'élève est correct
-MAUVAIS = si le code est incorrect
-
-Pas d\'explication, juste UN mot : BON ou MAUVAIS'''
-    }
-]
+    correction_upper = correction.upper()
     
-    reponse = ollama.chat(model='qwen2.5-coder:14b', messages = messages)
-    reponse_ia = reponse['message']['content']
-    
-    if 'BON' in reponse_ia.upper():
-        avancer = True
-    elif 'MAUVAIS' in reponse_ia.upper():
-        avancer = False
+    if 'CORRECT' in correction_upper and 'INCORRECT' not in correction_upper:
+        return True
     else:
-        print("L'IA a mal formulé sa réponse entre BON et MAUVAIS")
-        print(f"Réponse reçue : {reponse_ia}")
-    
-    return avancer
+        return False
 
 
 

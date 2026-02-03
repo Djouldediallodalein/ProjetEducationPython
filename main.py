@@ -38,20 +38,33 @@ if __name__ == "__main__":
             print(exercice)
             print("\n" + "-"*60)
             
-            solution = input("\nVeuillez entrer votre solution Python :\n")
+            tentatives = 0
+            avancement = False
             
-            print("\n" + "="*60)
-            print("VERIFICATION")
-            print("="*60)
-            verification = verifier_reponse(exercice, solution)
-            print(verification)
-            
-            avancement = analyser_verdict(verification)
-            
-            if avancement:
-                print("\nResultat : EXERCICE REUSSI !")
-            else:
-                print("\nResultat : Reessayez, vous pouvez y arriver !")
+            while not avancement:
+                tentatives += 1
+                print(f"\nTentative {tentatives}")
+                
+                solution = input("\nVeuillez entrer votre solution Python :\n")
+                
+                print("\n" + "="*60)
+                print("VERIFICATION")
+                print("="*60)
+                verification = verifier_reponse(exercice, solution)
+                print(verification)
+                
+                avancement = analyser_verdict(verification)
+                
+                if avancement:
+                    print("\nResultat : EXERCICE REUSSI !")
+                else:
+                    print("\nResultat : Reessayez, vous pouvez y arriver !")
+                    if tentatives >= 3:
+                        choix_passer = input("\nVous avez fait 3 tentatives. Voulez-vous passer cet exercice ? (oui/non) : ")
+                        if choix_passer.lower() in ['oui', 'o', 'yes', 'y']:
+                            print("\nExercice passe. Aucun point attribue.")
+                            avancement = False
+                            break
             
             mettre_a_jour_progression(theme, avancement)
             
