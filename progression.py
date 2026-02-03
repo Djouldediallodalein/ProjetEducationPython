@@ -115,15 +115,4 @@ def est_exercice_complete(theme, niveau, exercice):
     exercice_str = str(exercice)[:50]
     identifiant = f"{theme}|{niveau}|{exercice_str}"
     return identifiant in progression['exercices_completes']
-
-
-def est_exercice_complete(theme, niveau, exercice):
-    """Vérifie si un exercice a déjà été complété"""
-    progression = charger_progression()
-    
-    if 'exercices_completes' not in progression:
-        return False
-    
-    identifiant = f"{theme}|{niveau}|{exercice[:50]}"
-    return identifiant in progression['exercices_completes']
     
