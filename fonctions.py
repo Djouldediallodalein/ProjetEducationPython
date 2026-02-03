@@ -50,7 +50,7 @@ def generer_exercice(niveau, theme):
     if theme in banque and niveau_str in banque[theme] and banque[theme][niveau_str]:
         exercices_disponibles = [
             ex for ex in banque[theme][niveau_str] 
-            if not est_exercice_complete(theme, niveau, ex)
+            if not est_exercice_complete(theme, niveau, str(ex))
         ]
         
         if exercices_disponibles:
@@ -76,13 +76,37 @@ Exemple : "Écrivez une fonction qui prend un nombre en paramètre et retourne T
     }
 ]
     response = ollama.chat(model='qwen2.5-coder:14b', messages = messages)
-    exercice = response['message']['content']
+    exercice_ia = response['message']['content']
+    
+    exercice = {
+        "type": "code",
+        "enonce": exercice_ia
+    }
     
     ajouter_exercice_banque(theme, niveau, exercice)
     
     return exercice
 
 
+
+def afficher_qcm(exercice):
+    """Affiche un QCM et retourne la réponse de l'utilisateur"""
+    print(exercice['question'])
+    print()
+    
+    for i, choix in enumerate(exercice['choix'], 1):
+        print(f"{i}. {choix}")
+    
+    print()
+    while True:
+        try:
+            reponse_num = int(input("Votre réponse (1-4) : "))
+            if 1 <= reponse_num <= len(exercice['choix']):
+                return exercice['choix'][reponse_num - 1]
+            else:
+                print("Choix invalide. Entrez un nombre entre 1 et 4.")
+        except ValueError:
+            print("Veuillez entrer un nombre.")
 
 
 
