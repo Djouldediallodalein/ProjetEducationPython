@@ -97,7 +97,8 @@ def marquer_exercice_complete(theme, niveau, exercice):
     if 'exercices_completes' not in progression:
         progression['exercices_completes'] = []
     
-    identifiant = f"{theme}|{niveau}|{exercice[:50]}"
+    exercice_str = str(exercice)[:50]
+    identifiant = f"{theme}|{niveau}|{exercice_str}"
     
     if identifiant not in progression['exercices_completes']:
         progression['exercices_completes'].append(identifiant)
@@ -111,12 +112,9 @@ def est_exercice_complete(theme, niveau, exercice):
     if 'exercices_completes' not in progression:
         return False
     
-    identifiant = f"{theme}|{niveau}|{exercice[:50]}"
+    exercice_str = str(exercice)[:50]
+    identifiant = f"{theme}|{niveau}|{exercice_str}"
     return identifiant in progression['exercices_completes']
-    
-    if identifiant not in progression['exercices_completes']:
-        progression['exercices_completes'].append(identifiant)
-        sauvegarder_progression(progression)
 
 
 def est_exercice_complete(theme, niveau, exercice):
