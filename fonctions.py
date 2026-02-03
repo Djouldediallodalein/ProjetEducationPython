@@ -2,12 +2,63 @@
 
 import ollama
 import random 
+import json
+import os
+from progression import est_exercice_complete
+
+FICHIER_BANQUE = 'banque_exercices.json'
+
+def charger_banque():
+    """Charge la banque d'exercices depuis le fichier JSON"""
+    if os.path.exists(FICHIER_BANQUE):
+        with open(FICHIER_BANQUE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    else:
+        return {}
+
+def sauvegarder_banque(banque):
+    """Sauvegarde la banque d'exercices dans le fichier JSON"""
+    with open(FICHIER_BANQUE, 'w', encoding='utf-8') as f:
+        json.dump(banque, f, indent=2, ensure_ascii=False)
+        
+        
+
+
+def ajouter_exercice_banque(theme, niveau, exercice):
+    """Ajoute un exercice généré par l'IA dans la banque s'il n'existe pas déjà"""
+    banque = charger_banque()
+    
+    if theme not in banque:
+        banque[theme] = {"1": [], "2": [], "3": []}
+    
+    niveau_str = str(niveau)
+    if niveau_str not in banque[theme]:
+        banque[theme][niveau_str] = []
+    
+    if exercice not in banque[theme][niveau_str]:
+        banque[theme][niveau_str].append(exercice)
+        sauvegarder_banque(banque)
+
 
 
 def generer_exercice(niveau, theme):
-    """ Cette fonction permet de demander à l'IA de generer un exercice en fonction du niveau.
+    """Génère un exercice : d'abord depuis la banque (non complété), sinon via l'IA"""
     
-    """
+    banque = charger_banque()
+    niveau_str = str(niveau)
+    
+    if theme in banque and niveau_str in banque[theme] and banque[theme][niveau_str]:
+        exercices_disponibles = [
+            ex for ex in banque[theme][niveau_str] 
+            if not est_exercice_complete(theme, niveau, ex)
+        ]
+        
+        if exercices_disponibles:
+            exercice = random.choice(exercices_disponibles)
+            print("[Exercice depuis la banque]")
+            return exercice
+    
+    print("[Generation par IA...]")
     messages = [
     {
         'role': 'user',
@@ -25,7 +76,11 @@ Exemple : "Écrivez une fonction qui prend un nombre en paramètre et retourne T
     }
 ]
     response = ollama.chat(model='qwen2.5-coder:14b', messages = messages)
-    return response['message']['content']
+    exercice = response['message']['content']
+    
+    ajouter_exercice_banque(theme, niveau, exercice)
+    
+    return exercice
 
 
 

@@ -14,6 +14,7 @@ def initialiser_progression():
         'exercices_reussis': 0,
         'exercices_totaux': 0,
         'themes': {},
+        'exercices_completes': [],
         'date_creation': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     }
     
@@ -85,4 +86,46 @@ def afficher_progression():
             print(f"{theme} : {stats['reussis']}/{stats['totaux']} ({taux_theme:.0f}%)")
     else:
         print("Aucun exercice effectué pour le moment.")
+        
+        
+
+
+def marquer_exercice_complete(theme, niveau, exercice):
+    """Marque un exercice comme complété pour éviter de le reproposer"""
+    progression = charger_progression()
+    
+    if 'exercices_completes' not in progression:
+        progression['exercices_completes'] = []
+    
+    identifiant = f"{theme}|{niveau}|{exercice[:50]}"
+    
+    if identifiant not in progression['exercices_completes']:
+        progression['exercices_completes'].append(identifiant)
+        sauvegarder_progression(progression)
+
+
+def est_exercice_complete(theme, niveau, exercice):
+    """Vérifie si un exercice a déjà été complété"""
+    progression = charger_progression()
+    
+    if 'exercices_completes' not in progression:
+        return False
+    
+    identifiant = f"{theme}|{niveau}|{exercice[:50]}"
+    return identifiant in progression['exercices_completes']
+    
+    if identifiant not in progression['exercices_completes']:
+        progression['exercices_completes'].append(identifiant)
+        sauvegarder_progression(progression)
+
+
+def est_exercice_complete(theme, niveau, exercice):
+    """Vérifie si un exercice a déjà été complété"""
+    progression = charger_progression()
+    
+    if 'exercices_completes' not in progression:
+        return False
+    
+    identifiant = f"{theme}|{niveau}|{exercice[:50]}"
+    return identifiant in progression['exercices_completes']
     

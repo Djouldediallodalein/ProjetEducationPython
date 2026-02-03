@@ -1,9 +1,10 @@
 ## Programme principal pour une application simple
 
 from fonctions import generer_exercice, verifier_reponse, analyser_verdict, choisir_theme
-from progression import charger_progression, mettre_a_jour_progression, afficher_progression
+from progression import charger_progression, mettre_a_jour_progression, afficher_progression, marquer_exercice_complete
 
 progression = charger_progression()
+
 niveau = progression['niveau']
 
     
@@ -65,6 +66,9 @@ if __name__ == "__main__":
                         if choix_passer.lower() in ['oui', 'o', 'yes', 'y']:
                             print("\nExercice passe. Aucun point attribue.")
                             exercice_passe = True
+            
+            if avancement:
+                marquer_exercice_complete(theme, niveau, exercice)
             
             mettre_a_jour_progression(theme, avancement)
             
