@@ -15,6 +15,7 @@ def initialiser_progression():
         'exercices_totaux': 0,
         'themes': {},
         'exercices_completes': [],
+        'badges': [],
         'date_creation': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     }
     

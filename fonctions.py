@@ -199,15 +199,18 @@ def choisir_theme():
         print(f"{key}. {value}")
     
     print("\n11. Theme aleatoire")
+    print("12. Sujet libre (n'importe quel thème !)")
     print("0. Retour au menu principal")
     print("="*50)
     
-    choix_theme = input("\nChoisissez un theme (1-11 ou 0 pour retourner) : ")
+    choix_theme = input("\nChoisissez un theme (1-12 ou 0 pour retourner) : ")
     
     if choix_theme == '0':
         return None
     elif choix_theme == '11':
         return choisir_theme_aleatoire()
+    elif choix_theme == '12':
+        return mode_sujet_libre()
     elif choix_theme in themes_disponibles:
         theme_selectionne = themes_disponibles[choix_theme]
         print(f"Theme selectionne : {theme_selectionne}")
@@ -215,4 +218,24 @@ def choisir_theme():
     else:
         print("Choix invalide ! Veuillez reessayer.")
         return choisir_theme()
+
+
+def mode_sujet_libre():
+    """Permet d'apprendre n'importe quel sujet via IA"""
+    print("\nMODE SUJET LIBRE")
+    print("="*50)
+    print("Vous pouvez apprendre n'importe quel sujet !")
+    print("Exemples : JavaScript, Espagnol, Physique, SQL, etc.")
+    print("="*50)
+    
+    sujet = input("\nEntrez le sujet que vous voulez apprendre : ").strip()
+    
+    if not sujet:
+        print("Sujet invalide. Retour au menu.")
+        return None
+    
+    print(f"\nMode apprentissage : {sujet}")
+    print("Note : Les exercices seront generés par l'IA en temps réel.")
+    
+    return f"[Sujet Libre] {sujet}"
 

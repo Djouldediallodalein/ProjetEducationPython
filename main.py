@@ -2,6 +2,7 @@
 
 from fonctions import generer_exercice, verifier_reponse, analyser_verdict, choisir_theme, afficher_qcm
 from progression import charger_progression, mettre_a_jour_progression, afficher_progression, marquer_exercice_complete
+from avancees import verifier_nouveaux_badges, afficher_badges, suggerer_theme_revision
 
 progression = charger_progression()
 
@@ -13,15 +14,20 @@ if __name__ == "__main__":
     print("L'objectif est d'apprendre Python en resolvant des exercices par theme.")
     print("="*60)
     
+    # Suggérer un thème à réviser
+    theme_suggere = suggerer_theme_revision()
+    if theme_suggere:
+        print(f"\nSuggestion : Revisez '{theme_suggere}' pour progresser !")
+    
     choix = 0
     
-    while choix != 3:
+    while choix != 4:
         print("\nMENU PRINCIPAL")
         print("="*60)
         try:
-            choix = int(input("Veuillez choisir une option :\n1. Commencer les exercices\n2. Voir ma progression\n3. Quitter\n\nVotre choix : "))
+            choix = int(input("Veuillez choisir une option :\n1. Commencer les exercices\n2. Voir ma progression\n3. Voir mes badges\n4. Quitter\n\nVotre choix : "))
         except ValueError:
-            print("Erreur : Entrez uniquement un numero (1, 2 ou 3)")
+            print("Erreur : Entrez uniquement un numero (1-4)")
             continue
         
         if choix == 1:
@@ -112,6 +118,11 @@ if __name__ == "__main__":
             
             if avancement:
                 marquer_exercice_complete(theme, niveau, exercice)
+                
+                # Vérifier si de nouveaux badges sont gagnés
+                nouveaux_badges = verifier_nouveaux_badges()
+                if nouveaux_badges:
+                    print(f"\n BADGE GAGNE : {', '.join(nouveaux_badges)} !")
             
             mettre_a_jour_progression(theme, avancement)
             
@@ -119,12 +130,15 @@ if __name__ == "__main__":
             afficher_progression()
             
         elif choix == 3:
+            afficher_badges()
+            
+        elif choix == 4:
             print("\n" + "="*60)
             print("Merci d'avoir utilise l'application !")
             print("A bientot pour de nouveaux exercices.")
             print("="*60)
             
         else:
-            print("Erreur : Choix invalide. Veuillez choisir 1, 2 ou 3.")
+            print("Erreur : Choix invalide. Veuillez choisir 1, 2, 3 ou 4.")
                        
     
