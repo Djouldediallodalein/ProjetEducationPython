@@ -40,8 +40,9 @@ if __name__ == "__main__":
             
             tentatives = 0
             avancement = False
+            exercice_passe = False
             
-            while not avancement:
+            while not avancement and not exercice_passe:
                 tentatives += 1
                 print(f"\nTentative {tentatives}")
                 
@@ -63,8 +64,7 @@ if __name__ == "__main__":
                         choix_passer = input("\nVous avez fait 3 tentatives. Voulez-vous passer cet exercice ? (oui/non) : ")
                         if choix_passer.lower() in ['oui', 'o', 'yes', 'y']:
                             print("\nExercice passe. Aucun point attribue.")
-                            avancement = False
-                            break
+                            exercice_passe = True
             
             mettre_a_jour_progression(theme, avancement)
             
