@@ -1,7 +1,9 @@
 ## Programme principal pour une application simple
 
 from fonctions import generer_exercice, verifier_reponse, analyser_verdict, choisir_theme, afficher_qcm
-from progression import charger_progression, mettre_a_jour_progression, afficher_progression, marquer_exercice_complete
+from progression import (charger_progression, mettre_a_jour_progression, afficher_progression, 
+                        marquer_exercice_complete, mettre_a_jour_streak, afficher_streak,
+                        ajouter_a_historique, afficher_historique, afficher_statistiques_detaillees)
 from avancees import verifier_nouveaux_badges, afficher_badges, suggerer_theme_revision
 
 progression = charger_progression()
@@ -14,6 +16,16 @@ if __name__ == "__main__":
     print("L'objectif est d'apprendre Python en resolvant des exercices par theme.")
     print("="*60)
     
+    # Mise à jour et affichage du streak
+    streak, nouveau = mettre_a_jour_streak()
+    if streak > 1:
+        print(f"\nSTREAK : {streak} jours consecutifs ! Continuez comme ca !")
+    elif streak == 1:
+        if nouveau:
+            print(f"\nVotre streak demarre aujourd'hui ! Revenez demain pour continuer !")
+        else:
+            print(f"\nBon retour ! Votre streak a ete reinitialise.")
+    
     # Suggérer un thème à réviser
     theme_suggere = suggerer_theme_revision()
     if theme_suggere:
@@ -21,13 +33,13 @@ if __name__ == "__main__":
     
     choix = 0
     
-    while choix != 4:
+    while choix != 6:
         print("\nMENU PRINCIPAL")
         print("="*60)
         try:
-            choix = int(input("Veuillez choisir une option :\n1. Commencer les exercices\n2. Voir ma progression\n3. Voir mes badges\n4. Quitter\n\nVotre choix : "))
+            choix = int(input("Veuillez choisir une option :\n1. Commencer les exercices\n2. Voir ma progression\n3. Voir mes badges\n4. Voir l'historique\n5. Statistiques detaillees\n6. Quitter\n\nVotre choix : "))
         except ValueError:
-            print("Erreur : Entrez uniquement un numero (1-4)")
+            print("Erreur : Entrez uniquement un numero (1-6)")
             continue
         
         if choix == 1:
@@ -75,6 +87,9 @@ if __name__ == "__main__":
                                     if choix_passer.lower() in ['oui', 'o', 'yes', 'y']:
                                         print("\nExercice passe. Aucun point attribue.")
                                         exercice_passe = True
+                                    else:
+                                        # Reset le compteur pour laisser l'utilisateur continuer
+                                        tentatives = 0
                         else:
                             print("Choix invalide. Entrez un nombre entre 1 et 4.")
                             tentatives -= 1
@@ -115,6 +130,12 @@ if __name__ == "__main__":
                             if choix_passer.lower() in ['oui', 'o', 'yes', 'y']:
                                 print("\nExercice passe. Aucun point attribue.")
                                 exercice_passe = True
+                            else:
+                                # Reset le compteur pour laisser l'utilisateur continuer
+                                tentatives = 0
+            
+            # Ajouter à l'historique (que ce soit réussi ou passé)
+            ajouter_a_historique(theme, niveau, exercice, tentatives, avancement)
             
             if avancement:
                 marquer_exercice_complete(theme, niveau, exercice)
@@ -133,12 +154,18 @@ if __name__ == "__main__":
             afficher_badges()
             
         elif choix == 4:
+            afficher_historique()
+            
+        elif choix == 5:
+            afficher_statistiques_detaillees()
+            
+        elif choix == 6:
             print("\n" + "="*60)
             print("Merci d'avoir utilise l'application !")
             print("A bientot pour de nouveaux exercices.")
             print("="*60)
             
         else:
-            print("Erreur : Choix invalide. Veuillez choisir 1, 2, 3 ou 4.")
+            print("Erreur : Choix invalide. Veuillez choisir entre 1 et 6.")
                        
     
