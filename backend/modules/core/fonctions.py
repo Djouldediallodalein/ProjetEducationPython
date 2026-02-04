@@ -299,3 +299,274 @@ def mode_sujet_libre():
     
     return f"[Sujet Libre] {sujet}"
 
+
+# ==================== VALIDATION SÉCURISÉE DU CODE ====================
+
+import signal
+from contextlib import redirect_stdout, redirect_stderr
+from io import StringIO
+
+# Liste des imports dangereux à bloquer
+IMPORTS_INTERDITS = [
+    'os', 'sys', 'subprocess', 'shutil', 'socket',
+    'requests', 'urllib', 'pathlib', '__import__',
+    'eval', 'exec', 'compile', '__builtins__'
+]
+
+class TimeoutException(Exception):
+    """Exception levée en cas de timeout"""
+    pass
+
+def timeout_handler(signum, frame):
+    """Handler pour le timeout (Linux/Mac uniquement)"""
+    raise TimeoutException("Timeout : Le code prend trop de temps")
+
+def verifier_code_dangereux(code):
+    """
+    Vérifie si le code contient des imports ou instructions dangereux
+    
+    Args:
+        code (str): Le code Python à vérifier
+        
+    Returns:
+        tuple: (bool, str) - (True si sûr, message d'erreur si dangereux)
+    """
+    # Vérifier les imports interdits (avec et sans espaces)
+    for interdit in IMPORTS_INTERDITS:
+        # Vérifier "import os", "from os import", etc.
+        patterns = [
+            f'import {interdit}',
+            f'from {interdit}',
+            f'import{interdit}',  # sans espace
+            f'from{interdit}'     # sans espace
+        ]
+        for pattern in patterns:
+            if pattern.lower() in code.lower():
+                return False, f"Import interdit detecte : {interdit}"
+    
+    # Vérifier les mots-clés dangereux
+    mots_dangereux = ['exec(', 'eval(', 'compile(', 'open(', '__import__']
+    for mot in mots_dangereux:
+        if mot.lower() in code.lower():
+            return False, f"Instruction dangereuse detectee : {mot}"
+    
+    return True, ""
+
+def executer_code_securise(code, timeout_secondes=5):
+    """
+    Exécute du code Python de manière sécurisée avec restrictions
+    
+    Args:
+        code (str): Le code Python à exécuter
+        timeout_secondes (int): Temps maximum d'exécution (défaut 5s)
+    
+    Returns:
+        dict: {
+            'success': bool,
+            'output': str (stdout),
+            'error': str (stderr ou message d'erreur),
+            'timeout': bool
+        }
+    """
+    # Vérifier les imports dangereux
+    safe, message = verifier_code_dangereux(code)
+    if not safe:
+        return {
+            'success': False,
+            'output': '',
+            'error': message,
+            'timeout': False
+        }
+    
+    # Préparer la capture des outputs
+    stdout_capture = StringIO()
+    stderr_capture = StringIO()
+    
+    # Créer un environnement restreint (whitelist de fonctions autorisées)
+    environnement = {
+        '__builtins__': {
+            'print': print,
+            'len': len,
+            'range': range,
+            'str': str,
+            'int': int,
+            'float': float,
+            'bool': bool,
+            'list': list,
+            'dict': dict,
+            'tuple': tuple,
+            'set': set,
+            'True': True,
+            'False': False,
+            'None': None,
+            'sum': sum,
+            'max': max,
+            'min': min,
+            'abs': abs,
+            'round': round,
+            'enumerate': enumerate,
+            'zip': zip,
+            'map': map,
+            'filter': filter,
+            'sorted': sorted,
+            'reversed': reversed,
+            'any': any,
+            'all': all,
+            'type': type,
+            'isinstance': isinstance,
+            'chr': chr,
+            'ord': ord,
+            'pow': pow,
+            'divmod': divmod,
+        }
+    }
+    
+    try:
+        # Note : signal.alarm ne fonctionne pas sur Windows
+        # Sur Linux/Mac, décommenter ces lignes pour activer le timeout :
+        # signal.signal(signal.SIGALRM, timeout_handler)
+        # signal.alarm(timeout_secondes)
+        
+        # Exécuter le code avec redirection des outputs
+        with redirect_stdout(stdout_capture), redirect_stderr(stderr_capture):
+            exec(code, environnement)
+        
+        # Annuler le timeout
+        # signal.alarm(0)
+        
+        return {
+            'success': True,
+            'output': stdout_capture.getvalue(),
+            'error': stderr_capture.getvalue(),
+            'timeout': False,
+            'environnement': environnement  # Permet de récupérer les variables définies
+        }
+        
+    except TimeoutException:
+        return {
+            'success': False,
+            'output': stdout_capture.getvalue(),
+            'error': 'Timeout : Votre code prend trop de temps (max 5s)',
+            'timeout': True
+        }
+        
+    except Exception as e:
+        return {
+            'success': False,
+            'output': stdout_capture.getvalue(),
+            'error': f'Erreur d\'execution : {type(e).__name__}: {str(e)}',
+            'timeout': False
+        }
+
+def verifier_avec_tests(code, tests):
+    """
+    Vérifie le code avec une liste de tests
+    
+    Args:
+        code (str): Le code de l'utilisateur (doit définir des fonctions)
+        tests (list): Liste de tuples (appel_fonction, resultat_attendu)
+            Exemple: [("fonction(5)", 10), ("fonction(3)", 6)]
+        
+    Returns:
+        dict: {
+            'success': bool,
+            'tests_reussis': int,
+            'tests_total': int,
+            'details': list
+        }
+    """
+    # Exécuter le code d'abord pour définir les fonctions
+    resultat = executer_code_securise(code)
+    
+    if not resultat['success']:
+        return {
+            'success': False,
+            'tests_reussis': 0,
+            'tests_total': len(tests),
+            'details': [{'erreur': resultat['error']}]
+        }
+    
+    # Récupérer l'environnement avec les fonctions définies
+    env = resultat.get('environnement', {})
+    
+    # Exécuter chaque test
+    tests_reussis = 0
+    details = []
+    
+    for i, (test_input, expected) in enumerate(tests):
+        try:
+            # Créer le code de test qui évalue l'expression
+            code_test = code + f"\n__test_result__ = {test_input}"
+            resultat_test = executer_code_securise(code_test)
+            
+            if resultat_test['success']:
+                # Récupérer le résultat du test
+                result = resultat_test.get('environnement', {}).get('__test_result__')
+                
+                if result == expected:
+                    tests_reussis += 1
+                    details.append({
+                        'test': i + 1,
+                        'input': test_input,
+                        'expected': expected,
+                        'got': result,
+                        'success': True
+                    })
+                else:
+                    details.append({
+                        'test': i + 1,
+                        'input': test_input,
+                        'expected': expected,
+                        'got': result,
+                        'success': False,
+                        'error': f'Attendu: {expected}, Obtenu: {result}'
+                    })
+            else:
+                details.append({
+                    'test': i + 1,
+                    'input': test_input,
+                    'expected': expected,
+                    'success': False,
+                    'error': resultat_test['error']
+                })
+        except Exception as e:
+            details.append({
+                'test': i + 1,
+                'input': test_input,
+                'expected': expected,
+                'success': False,
+                'error': f'Exception lors du test: {str(e)}'
+            })
+    
+    return {
+        'success': tests_reussis == len(tests),
+        'tests_reussis': tests_reussis,
+        'tests_total': len(tests),
+        'details': details
+    }
+
+def tester_fonction(code, nom_fonction, tests):
+    """
+    Teste une fonction définie dans le code avec plusieurs cas de test
+    
+    Args:
+        code (str): Le code contenant la définition de la fonction
+        nom_fonction (str): Le nom de la fonction à tester
+        tests (list): Liste de tuples (args, expected)
+            Exemple: [((5,), 25), ((3,), 9)] pour tester carre(5) et carre(3)
+    
+    Returns:
+        dict: Résultat des tests avec détails
+    """
+    # Convertir les tests au format attendu par verifier_avec_tests
+    tests_formatte = []
+    for args, expected in tests:
+        if isinstance(args, tuple):
+            args_str = ', '.join(str(arg) for arg in args)
+        else:
+            args_str = str(args)
+        appel = f"{nom_fonction}({args_str})"
+        tests_formatte.append((appel, expected))
+    
+    return verifier_avec_tests(code, tests_formatte)
+
