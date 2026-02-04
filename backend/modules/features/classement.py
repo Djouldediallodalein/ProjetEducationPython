@@ -6,8 +6,8 @@ Permet de se mesurer globalement et par domaine
 import json
 import os
 from datetime import datetime
-from progression import charger_progression, obtenir_progression_domaine
-from domaines import charger_domaines, obtenir_nom_domaine
+from modules.core.progression import charger_progression, obtenir_progression_domaine
+from modules.core.domaines import charger_domaines, obtenir_nom_domaine
 
 
 FICHIER_CLASSEMENT = 'classement.json'

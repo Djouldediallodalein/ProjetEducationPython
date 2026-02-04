@@ -2,7 +2,7 @@
 Système de points d'expérience (XP) et de niveaux
 """
 
-from progression import charger_progression, sauvegarder_progression, obtenir_domaine_actif, obtenir_progression_domaine
+from modules.core.progression import charger_progression, sauvegarder_progression, obtenir_domaine_actif, obtenir_progression_domaine
 
 # Configuration des points
 POINTS_PAR_TYPE = {

@@ -4,9 +4,9 @@ import ollama
 import random 
 import json
 import os
-from progression import est_exercice_complete
+from modules.core.progression import est_exercice_complete
 try:
-    from domaines import obtenir_config_ia, obtenir_themes_domaine
+    from modules.core.domaines import obtenir_config_ia, obtenir_themes_domaine
 except ImportError:
     # Éviter les imports circulaires
     obtenir_config_ia = None

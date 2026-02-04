@@ -5,8 +5,8 @@ Graphiques, statistiques et analyses détaillées de la progression
 
 import json
 from datetime import datetime, timedelta
-from progression import charger_progression, obtenir_progression_domaine
-from domaines import charger_domaines, obtenir_nom_domaine
+from modules.core.progression import charger_progression, obtenir_progression_domaine
+from modules.core.domaines import charger_domaines, obtenir_nom_domaine
 
 
 def calculer_temps_moyen_par_exercice():

@@ -4,7 +4,7 @@ Basé sur l'algorithme SM-2 simplifié
 """
 
 from datetime import datetime, timedelta
-from progression import charger_progression, sauvegarder_progression, obtenir_domaine_actif, obtenir_progression_domaine
+from modules.core.progression import charger_progression, sauvegarder_progression, obtenir_domaine_actif, obtenir_progression_domaine
 import json
 
 

@@ -5,7 +5,7 @@ Permet à l'utilisateur d'apprendre n'importe quel langage/sujet
 
 import json
 import os
-from gestion_erreurs import sauvegarder_json_securise
+from modules.core.gestion_erreurs import sauvegarder_json_securise
 
 FICHIER_DOMAINES = 'domaines.json'
 

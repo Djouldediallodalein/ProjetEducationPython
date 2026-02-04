@@ -7,8 +7,8 @@ import json
 import os
 import csv
 from datetime import datetime
-from progression import charger_progression, obtenir_progression_domaine
-from domaines import charger_domaines, obtenir_nom_domaine
+from modules.core.progression import charger_progression, obtenir_progression_domaine
+from modules.core.domaines import charger_domaines, obtenir_nom_domaine
 
 
 DOSSIER_EXPORTS = 'exports'

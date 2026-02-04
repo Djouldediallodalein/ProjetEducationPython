@@ -5,7 +5,7 @@ Système de gestion des utilisateurs multiples
 import json
 import os
 from datetime import datetime
-from progression import initialiser_progression
+from modules.core.progression import initialiser_progression
 
 FICHIER_UTILISATEURS = 'utilisateurs.json'
 DOSSIER_PROGRESSIONS = 'progressions'

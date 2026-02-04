@@ -6,7 +6,7 @@ Cache d'exercices pour fonctionner sans Ollama
 import json
 import os
 import random
-from domaines import charger_domaines, obtenir_themes_domaine
+from modules.core.domaines import charger_domaines, obtenir_themes_domaine
 
 
 FICHIER_CACHE = 'cache_exercices.json'

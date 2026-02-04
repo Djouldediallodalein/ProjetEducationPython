@@ -7,8 +7,8 @@ import json
 import os
 from datetime import datetime, timedelta
 import random
-from progression import charger_progression, sauvegarder_progression, obtenir_domaine_actif, obtenir_progression_domaine
-from domaines import charger_domaines, obtenir_nom_domaine
+from modules.core.progression import charger_progression, sauvegarder_progression, obtenir_domaine_actif, obtenir_progression_domaine
+from modules.core.domaines import charger_domaines, obtenir_nom_domaine
 
 
 FICHIER_DEFIS = 'defis_quotidiens.json'

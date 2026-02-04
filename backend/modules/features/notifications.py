@@ -6,7 +6,7 @@ Gère les alertes pour streak, révisions SRS, défis, etc.
 import json
 import os
 from datetime import datetime, timedelta
-from progression import charger_progression
+from modules.core.progression import charger_progression
 
 
 FICHIER_NOTIFICATIONS = 'notifications.json'

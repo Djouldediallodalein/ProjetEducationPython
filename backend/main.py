@@ -1,37 +1,39 @@
 ## Programme principal pour une application simple
 
-from gestion_erreurs import (
+# Modules Core
+from modules.core.gestion_erreurs import (
     initialiser_logging, log_info, log_erreur, log_avertissement,
     verifier_integrite_systeme, gestionnaire_erreur_global, menu_logs
 )
-from fonctions import generer_exercice, verifier_reponse, analyser_verdict, choisir_theme, afficher_qcm
-from progression import (charger_progression, mettre_a_jour_progression, afficher_progression, 
+from modules.core.fonctions import generer_exercice, verifier_reponse, analyser_verdict, choisir_theme, afficher_qcm
+from modules.core.progression import (charger_progression, mettre_a_jour_progression, afficher_progression, 
                         marquer_exercice_complete, mettre_a_jour_streak, afficher_streak,
                         ajouter_a_historique, afficher_historique, afficher_statistiques_detaillees,
                         obtenir_domaine_actif, changer_domaine_actif, obtenir_progression_domaine)
-from avancees import verifier_nouveaux_badges, afficher_badges, suggerer_theme_revision
-from xp_systeme import calculer_xp, ajouter_xp, afficher_info_xp, afficher_details_xp_gagne
-from utilisateurs import (
+from modules.core.avancees import verifier_nouveaux_badges, afficher_badges, suggerer_theme_revision
+from modules.core.xp_systeme import calculer_xp, ajouter_xp, afficher_info_xp, afficher_details_xp_gagne
+from modules.core.utilisateurs import (
     initialiser_systeme_utilisateurs, menu_utilisateurs, 
     obtenir_utilisateur_actif, lister_utilisateurs, selectionner_utilisateur
 )
-from repetition_espacee import (
+from modules.core.repetition_espacee import (
     enregistrer_revision, obtenir_exercices_a_reviser, 
     afficher_exercices_a_reviser, mode_revision, afficher_statistiques_srs
 )
-from export_import import menu_export_import
-from domaines import choisir_domaine, obtenir_nom_domaine, charger_domaines
-# Nouveaux modules d'amélioration
-from defis_quotidiens import menu_defis
-from comparaison_domaines import menu_comparaison
-from classement import menu_classement
-from quetes import menu_quetes
-from export_avance import menu_export_avance
-from themes import menu_themes
-from notifications import menu_notifications
-from mode_hors_ligne import menu_mode_hors_ligne
-from analytics import menu_analytics
-from collaboratif import menu_collaboratif
+from modules.core.export_import import menu_export_import
+from modules.core.domaines import choisir_domaine, obtenir_nom_domaine, charger_domaines
+
+# Modules Features (Améliorations)
+from modules.features.defis_quotidiens import menu_defis
+from modules.features.comparaison_domaines import menu_comparaison
+from modules.features.classement import menu_classement
+from modules.features.quetes import menu_quetes
+from modules.features.export_avance import menu_export_avance
+from modules.features.themes import menu_themes
+from modules.features.notifications import menu_notifications
+from modules.features.mode_hors_ligne import menu_mode_hors_ligne
+from modules.features.analytics import menu_analytics
+from modules.features.collaboratif import menu_collaboratif
 
 progression = charger_progression()
 

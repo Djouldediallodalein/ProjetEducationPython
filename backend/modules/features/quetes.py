@@ -6,8 +6,8 @@ Objectifs qui se débloquent progressivement
 import json
 import os
 from datetime import datetime
-from progression import charger_progression, sauvegarder_progression, obtenir_domaine_actif, obtenir_progression_domaine
-from domaines import charger_domaines, obtenir_nom_domaine
+from modules.core.progression import charger_progression, sauvegarder_progression, obtenir_domaine_actif, obtenir_progression_domaine
+from modules.core.domaines import charger_domaines, obtenir_nom_domaine
 
 
 FICHIER_QUETES = 'quetes.json'

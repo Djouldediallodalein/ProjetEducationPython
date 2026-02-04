@@ -6,7 +6,7 @@ from datetime import datetime
 def obtenir_fichier_progression():
     """Obtient le fichier de progression selon le système d'utilisateurs"""
     try:
-        from utilisateurs import obtenir_fichier_progression_actif
+        from modules.core.utilisateurs import obtenir_fichier_progression_actif
         return obtenir_fichier_progression_actif()
     except ImportError:
         # Si le module utilisateurs n'est pas disponible, utiliser le fichier par défaut
@@ -135,7 +135,7 @@ def obtenir_progression_domaine(domaine=None):
 def sauvegarder_progression(progression):
     """Sauvegarde la progression dans le fichier JSON"""
     try:
-        from gestion_erreurs import sauvegarder_json_securise
+        from modules.core.gestion_erreurs import sauvegarder_json_securise
         fichier = obtenir_fichier_progression()
         sauvegarder_json_securise(fichier, progression, sauvegarde_backup=True)
     except ImportError:
@@ -203,7 +203,7 @@ def afficher_progression(domaine=None):
     
     # Obtenir le nom du domaine
     try:
-        from domaines import obtenir_nom_domaine
+        from modules.core.domaines import obtenir_nom_domaine
         nom_domaine = obtenir_nom_domaine(domaine)
     except:
         nom_domaine = domaine.upper()

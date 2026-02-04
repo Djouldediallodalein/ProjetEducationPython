@@ -4,8 +4,8 @@ Permet de visualiser les compétences à travers tous les domaines
 """
 
 import json
-from progression import charger_progression, obtenir_progression_domaine
-from domaines import charger_domaines, obtenir_nom_domaine
+from modules.core.progression import charger_progression, obtenir_progression_domaine
+from modules.core.domaines import charger_domaines, obtenir_nom_domaine
 
 
 def obtenir_progression_tous_domaines():
