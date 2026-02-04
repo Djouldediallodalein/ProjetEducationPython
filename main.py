@@ -1,7 +1,7 @@
 ## Programme principal pour une application simple
 
 from gestion_erreurs import (
-    initialiser_logging, log_info, log_erreur, 
+    initialiser_logging, log_info, log_erreur, log_avertissement,
     verifier_integrite_systeme, gestionnaire_erreur_global, menu_logs
 )
 from fonctions import generer_exercice, verifier_reponse, analyser_verdict, choisir_theme, afficher_qcm

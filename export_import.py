@@ -51,7 +51,8 @@ def exporter_progression(nom_sauvegarde=None):
     fichiers_a_sauvegarder = [
         'progression_utilisateur.json',
         'banque_exercices.json',
-        'utilisateurs.json'
+        'utilisateurs.json',
+        'domaines.json'
     ]
     
     for fichier in fichiers_a_sauvegarder:
@@ -187,11 +188,14 @@ def supprimer_sauvegarde(chemin_sauvegarde):
 
 def exporter_statistiques():
     """Exporte les statistiques sous forme de rapport texte"""
-    from progression import charger_progression
+    from progression import charger_progression, obtenir_domaine_actif, obtenir_progression_domaine
+    from domaines import charger_domaines, obtenir_nom_domaine
     
     initialiser_dossier_sauvegardes()
     
     progression = charger_progression()
+    domaine_actif = obtenir_domaine_actif()
+    domaines = charger_domaines()
     
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     nom_rapport = f"rapport_stats_{timestamp}.txt"
@@ -202,42 +206,48 @@ def exporter_statistiques():
         f.write("RAPPORT DE STATISTIQUES\n")
         f.write("="*60 + "\n")
         f.write(f"\nDate: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"Domaine actif: {obtenir_nom_domaine(domaine_actif)}\n")
         
-        # Statistiques générales
-        f.write(f"\n\nSTATISTIQUES GENERALES\n")
+        # Statistiques par domaine
+        f.write(f"\n\nSTATISTIQUES PAR DOMAINE\n")
         f.write("-" * 60 + "\n")
-        f.write(f"Niveau: {progression.get('niveau', 1)}\n")
-        f.write(f"XP Total: {progression.get('xp_total', 0)}\n")
-        f.write(f"Exercices reussis: {progression.get('exercices_reussis', 0)}\n")
-        f.write(f"Exercices totaux: {progression.get('exercices_totaux', 0)}\n")
         
-        if progression.get('exercices_totaux', 0) > 0:
-            taux = (progression.get('exercices_reussis', 0) / progression['exercices_totaux']) * 100
-            f.write(f"Taux de reussite: {taux:.1f}%\n")
+        for domaine_id, prog_dom in progression.get('domaines', {}).items():
+            nom_domaine = obtenir_nom_domaine(domaine_id)
+            f.write(f"\n{nom_domaine}:\n")
+            f.write(f"  Niveau: {prog_dom.get('niveau', 1)}\n")
+            f.write(f"  XP Total: {prog_dom.get('xp_total', 0)}\n")
+            f.write(f"  Exercices reussis: {prog_dom.get('exercices_reussis', 0)}\n")
+            f.write(f"  Exercices totaux: {prog_dom.get('exercices_totaux', 0)}\n")
+            
+            if prog_dom.get('exercices_totaux', 0) > 0:
+                taux = (prog_dom.get('exercices_reussis', 0) / prog_dom['exercices_totaux']) * 100
+                f.write(f"  Taux de reussite: {taux:.1f}%\n")
         
         # Streaks
         f.write(f"\nStreak actuel: {progression.get('streak_actuel', 0)} jours\n")
         f.write(f"Record de streak: {progression.get('streak_record', 0)} jours\n")
         
-        # Badges
-        badges = progression.get('badges', [])
-        f.write(f"\n\nBADGES ({len(badges)})\n")
+        # Badges du domaine actif
+        prog_domaine_actif = obtenir_progression_domaine(domaine_actif)
+        badges = prog_domaine_actif.get('badges', [])
+        f.write(f"\n\nBADGES - {obtenir_nom_domaine(domaine_actif)} ({len(badges)})\n")
         f.write("-" * 60 + "\n")
         for badge in badges:
             f.write(f"- {badge}\n")
         
-        # Thèmes
-        f.write(f"\n\nPROGRESSION PAR THEME\n")
+        # Thèmes du domaine actif
+        f.write(f"\n\nPROGRESSION PAR THEME - {obtenir_nom_domaine(domaine_actif)}\n")
         f.write("-" * 60 + "\n")
-        for theme, stats in progression.get('themes', {}).items():
+        for theme, stats in prog_domaine_actif.get('themes', {}).items():
             taux = (stats['reussis'] / stats['totaux']) * 100 if stats['totaux'] > 0 else 0
             f.write(f"\n{theme}:\n")
             f.write(f"  Reussis: {stats['reussis']}/{stats['totaux']} ({taux:.1f}%)\n")
         
-        # Historique récent
-        historique = progression.get('historique', [])
+        # Historique récent du domaine actif
+        historique = prog_domaine_actif.get('historique', [])
         if historique:
-            f.write(f"\n\nHISTORIQUE RECENT (10 derniers)\n")
+            f.write(f"\n\nHISTORIQUE RECENT - {obtenir_nom_domaine(domaine_actif)} (10 derniers)\n")
             f.write("-" * 60 + "\n")
             for entree in historique[-10:]:
                 statut = "REUSSI" if entree['reussi'] else "PASSE"

@@ -1,8 +1,8 @@
 {
-    "domaine_actif": "python",
+    "domaine_actif": "java",
     "domaines": {
         "python": {
-            "niveau": 2,
+            "niveau": 3,
             "exercices_reussis": 9,
             "exercices_totaux": 14,
             "themes": {
@@ -44,21 +44,99 @@
                     "tentatives": 3,
                     "reussi": false
                 }
-            ]
+            ],
+            "srs": {
+                "exercices": {
+                    "Variables|2|Test Python": {
+                        "niveau_srs": 2,
+                        "theme": "Variables",
+                        "niveau_exercice": 2,
+                        "prochaine_revision": "2026-02-07",
+                        "historique": [
+                            {
+                                "date": "2026-02-04 10:51:43",
+                                "reussi": true,
+                                "tentatives": 1,
+                                "niveau_srs": 1
+                            },
+                            {
+                                "date": "2026-02-04 10:52:03",
+                                "reussi": true,
+                                "tentatives": 1,
+                                "niveau_srs": 2
+                            }
+                        ]
+                    },
+                    "Variables|2|Test Q": {
+                        "niveau_srs": 1,
+                        "theme": "Variables",
+                        "niveau_exercice": 2,
+                        "prochaine_revision": "2026-02-05",
+                        "historique": [
+                            {
+                                "date": "2026-02-04 10:54:18",
+                                "reussi": true,
+                                "tentatives": 1,
+                                "niveau_srs": 1
+                            }
+                        ]
+                    },
+                    "Variables|1|test1": {
+                        "niveau_srs": 1,
+                        "theme": "Variables",
+                        "niveau_exercice": 1,
+                        "prochaine_revision": "2026-02-05",
+                        "historique": [
+                            {
+                                "date": "2026-02-04 10:54:18",
+                                "reussi": true,
+                                "tentatives": 1,
+                                "niveau_srs": 1
+                            }
+                        ]
+                    }
+                }
+            },
+            "xp_total": 255
         },
         "java": {
-            "niveau": 1,
-            "exercices_reussis": 1,
-            "exercices_totaux": 1,
+            "niveau": 2,
+            "exercices_reussis": 2,
+            "exercices_totaux": 2,
             "themes": {
                 "Test Java": {
-                    "reussis": 1,
-                    "totaux": 1
+                    "reussis": 2,
+                    "totaux": 2
                 }
             },
             "exercices_completes": [],
             "badges": [],
-            "historique": []
+            "historique": [],
+            "srs": {
+                "exercices": {
+                    "Classes|2|Test Java": {
+                        "niveau_srs": 2,
+                        "theme": "Classes",
+                        "niveau_exercice": 2,
+                        "prochaine_revision": "2026-02-07",
+                        "historique": [
+                            {
+                                "date": "2026-02-04 10:51:43",
+                                "reussi": true,
+                                "tentatives": 1,
+                                "niveau_srs": 1
+                            },
+                            {
+                                "date": "2026-02-04 10:52:03",
+                                "reussi": true,
+                                "tentatives": 1,
+                                "niveau_srs": 2
+                            }
+                        ]
+                    }
+                }
+            },
+            "xp_total": 205
         }
     },
     "streak_actuel": 1,

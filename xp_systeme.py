@@ -2,7 +2,7 @@
 Système de points d'expérience (XP) et de niveaux
 """
 
-from progression import charger_progression, sauvegarder_progression
+from progression import charger_progression, sauvegarder_progression, obtenir_domaine_actif, obtenir_progression_domaine
 
 # Configuration des points
 POINTS_PAR_TYPE = {
@@ -97,29 +97,45 @@ def obtenir_multiplicateur_streak(streak):
     return mult
 
 
-def ajouter_xp(xp_gagne):
+def ajouter_xp(xp_gagne, domaine=None):
     """
     Ajoute de l'XP à la progression de l'utilisateur
     Gère automatiquement les montées de niveau
+    
+    Args:
+        xp_gagne: Points XP à ajouter
+        domaine: ID du domaine (None = domaine actif)
     
     Returns:
         tuple: (niveau_avant, niveau_apres, niveau_monte)
     """
     progression = charger_progression()
     
-    # Initialiser l'XP si nécessaire
-    if 'xp_total' not in progression:
-        progression['xp_total'] = 0
+    # Obtenir le domaine
+    if domaine is None:
+        domaine = obtenir_domaine_actif()
     
-    niveau_avant = progression['niveau']
-    progression['xp_total'] += xp_gagne
+    # Obtenir la progression du domaine
+    prog_domaine = obtenir_progression_domaine(domaine)
+    
+    # Initialiser l'XP si nécessaire
+    if 'xp_total' not in prog_domaine:
+        prog_domaine['xp_total'] = 0
+    
+    niveau_avant = prog_domaine['niveau']
+    prog_domaine['xp_total'] += xp_gagne
     
     # Calculer le nouveau niveau
-    nouveau_niveau = calculer_niveau(progression['xp_total'])
+    nouveau_niveau = calculer_niveau(prog_domaine['xp_total'])
     niveau_monte = nouveau_niveau > niveau_avant
     
     if niveau_monte:
-        progression['niveau'] = nouveau_niveau
+        prog_domaine['niveau'] = nouveau_niveau
+    
+    # Mettre à jour dans la structure principale (toujours, pas seulement si niveau monte)
+    if 'domaines' not in progression:
+        progression['domaines'] = {}
+    progression['domaines'][domaine] = prog_domaine
     
     sauvegarder_progression(progression)
     
@@ -151,12 +167,23 @@ def xp_pour_prochain_niveau(xp_actuel):
     return xp_restant
 
 
-def afficher_info_xp():
-    """Affiche les informations détaillées sur l'XP et le niveau"""
+def afficher_info_xp(domaine=None):
+    """Affiche les informations détaillées sur l'XP et le niveau
+    
+    Args:
+        domaine: ID du domaine (None = domaine actif)
+    """
     progression = charger_progression()
     
-    xp_total = progression.get('xp_total', 0)
-    niveau = progression.get('niveau', 1)
+    # Obtenir le domaine
+    if domaine is None:
+        domaine = obtenir_domaine_actif()
+    
+    # Obtenir la progression du domaine
+    prog_domaine = obtenir_progression_domaine(domaine)
+    
+    xp_total = prog_domaine.get('xp_total', 0)
+    niveau = prog_domaine.get('niveau', 1)
     streak = progression.get('streak_actuel', 0)
     
     print("\n" + "="*60)

@@ -4,7 +4,7 @@ Basé sur l'algorithme SM-2 simplifié
 """
 
 from datetime import datetime, timedelta
-from progression import charger_progression, sauvegarder_progression
+from progression import charger_progression, sauvegarder_progression, obtenir_domaine_actif, obtenir_progression_domaine
 import json
 
 
@@ -21,12 +21,32 @@ INTERVALLES = {
 }
 
 
-def initialiser_srs():
-    """Initialise la structure SRS dans la progression"""
+def initialiser_srs(domaine=None):
+    """Initialise la structure SRS dans la progression
+    
+    Args:
+        domaine: ID du domaine (None = domaine actif)
+    """
     progression = charger_progression()
     
-    if 'srs' not in progression:
-        progression['srs'] = {
+    # Obtenir le domaine
+    if domaine is None:
+        domaine = obtenir_domaine_actif()
+    
+    # S'assurer que la structure domaines existe
+    if 'domaines' not in progression:
+        progression['domaines'] = {}
+    
+    if domaine not in progression['domaines']:
+        progression['domaines'][domaine] = {
+            'niveau': 1,
+            'xp_total': 0,
+            'themes': {}
+        }
+    
+    # Initialiser SRS pour ce domaine
+    if 'srs' not in progression['domaines'][domaine]:
+        progression['domaines'][domaine]['srs'] = {
             'exercices': {}  # Format: {identifiant: {niveau, prochaine_revision, historique}}
         }
         sauvegarder_progression(progression)
@@ -42,7 +62,7 @@ def obtenir_identifiant_exercice(theme, niveau, exercice):
     return f"{theme}|{niveau}|{exercice_str}"
 
 
-def enregistrer_revision(theme, niveau_ex, exercice, reussi, tentatives):
+def enregistrer_revision(theme, niveau_ex, exercice, reussi, tentatives, domaine=None):
     """
     Enregistre une révision d'exercice et calcule la prochaine date
     
@@ -52,15 +72,23 @@ def enregistrer_revision(theme, niveau_ex, exercice, reussi, tentatives):
         exercice: L'exercice lui-même
         reussi: Boolean, True si réussi
         tentatives: Nombre de tentatives utilisées
+        domaine: ID du domaine (None = domaine actif)
     """
-    initialiser_srs()
+    # Obtenir le domaine
+    if domaine is None:
+        domaine = obtenir_domaine_actif()
+    
+    initialiser_srs(domaine)
     progression = charger_progression()
     
     identifiant = obtenir_identifiant_exercice(theme, niveau_ex, exercice)
     
+    # Obtenir le SRS du domaine
+    prog_domaine = progression['domaines'][domaine]
+    
     # Récupérer ou créer l'entrée SRS
-    if identifiant not in progression['srs']['exercices']:
-        progression['srs']['exercices'][identifiant] = {
+    if identifiant not in prog_domaine['srs']['exercices']:
+        prog_domaine['srs']['exercices'][identifiant] = {
             'niveau_srs': 0,
             'theme': theme,
             'niveau_exercice': niveau_ex,
@@ -68,7 +96,7 @@ def enregistrer_revision(theme, niveau_ex, exercice, reussi, tentatives):
             'historique': []
         }
     
-    entree = progression['srs']['exercices'][identifiant]
+    entree = prog_domaine['srs']['exercices'][identifiant]
     
     # Mettre à jour le niveau SRS
     if reussi:
@@ -102,20 +130,30 @@ def enregistrer_revision(theme, niveau_ex, exercice, reussi, tentatives):
     sauvegarder_progression(progression)
 
 
-def obtenir_exercices_a_reviser():
+def obtenir_exercices_a_reviser(domaine=None):
     """
     Obtient la liste des exercices à réviser aujourd'hui
+    
+    Args:
+        domaine: ID du domaine (None = domaine actif)
     
     Returns:
         list: Liste de tuples (theme, niveau_exercice)
     """
-    initialiser_srs()
+    # Obtenir le domaine
+    if domaine is None:
+        domaine = obtenir_domaine_actif()
+    
+    initialiser_srs(domaine)
     progression = charger_progression()
+    
+    # Obtenir le SRS du domaine
+    prog_domaine = progression['domaines'][domaine]
     
     aujourd_hui = datetime.now().date()
     exercices_a_reviser = []
     
-    for identifiant, entree in progression['srs']['exercices'].items():
+    for identifiant, entree in prog_domaine.get('srs', {}).get('exercices', {}).items():
         date_revision = datetime.strptime(entree['prochaine_revision'], '%Y-%m-%d').date()
         
         if date_revision <= aujourd_hui:
@@ -161,13 +199,21 @@ def afficher_exercices_a_reviser():
             print(f"  - Niveau {ex['niveau']} ({niveau_desc}) - SRS: {ex['niveau_srs']}/7")
 
 
-def mode_revision():
-    """Mode de révision dédié"""
+def mode_revision(domaine=None):
+    """Mode de révision dédié
+    
+    Args:
+        domaine: ID du domaine (None = domaine actif)
+    """
     from fonctions import generer_exercice, verifier_reponse, analyser_verdict
     from progression import mettre_a_jour_progression, ajouter_a_historique
     from xp_systeme import calculer_xp, ajouter_xp, afficher_details_xp_gagne
     
-    exercices = obtenir_exercices_a_reviser()
+    # Obtenir le domaine
+    if domaine is None:
+        domaine = obtenir_domaine_actif()
+    
+    exercices = obtenir_exercices_a_reviser(domaine)
     
     if not exercices:
         print("\n" + "="*60)
@@ -189,7 +235,7 @@ def mode_revision():
         niveau = ex_info['niveau']
         
         # Générer un exercice pour ce thème/niveau
-        exercice = generer_exercice(niveau, theme)
+        exercice = generer_exercice(niveau, theme, domaine)
         
         # Gérer l'exercice (QCM ou Code)
         if isinstance(exercice, dict) and exercice.get('type') == 'qcm':
@@ -232,14 +278,14 @@ def mode_revision():
                 tentatives += 1
                 solution = input(f"\nTentative {tentatives} - Votre solution Python :\n")
                 
-                verification = verifier_reponse(enonce, solution)
+                verification = verifier_reponse(enonce, solution, domaine)
                 print("\n" + verification)
                 
                 reussi = analyser_verdict(verification)
         
         # Enregistrer la révision
-        enregistrer_revision(theme, niveau, exercice, reussi, tentatives)
-        ajouter_a_historique(theme, niveau, exercice, tentatives, reussi)
+        enregistrer_revision(theme, niveau, exercice, reussi, tentatives, domaine)
+        ajouter_a_historique(theme, niveau, exercice, tentatives, reussi, domaine)
         
         if reussi:
             # Calculer et ajouter l'XP (avec bonus de révision)
@@ -248,10 +294,10 @@ def mode_revision():
             type_ex = exercice.get('type', 'code') if isinstance(exercice, dict) else 'code'
             
             xp_gagne = int(calculer_xp(type_ex, niveau, tentatives, streak_actuel) * 1.2)  # +20% en mode révision
-            ajouter_xp(xp_gagne)
+            ajouter_xp(xp_gagne, domaine)
             print(f"\n+{xp_gagne} XP (avec bonus revision +20%)")
         
-        mettre_a_jour_progression(theme, reussi)
+        mettre_a_jour_progression(theme, reussi, domaine)
         
         # Demander si continuer
         if i < len(exercices):
@@ -265,25 +311,36 @@ def mode_revision():
     print("="*60)
 
 
-def afficher_statistiques_srs():
-    """Affiche des statistiques sur le système SRS"""
-    initialiser_srs()
+def afficher_statistiques_srs(domaine=None):
+    """Affiche des statistiques sur le système SRS
+    
+    Args:
+        domaine: ID du domaine (None = domaine actif)
+    """
+    # Obtenir le domaine
+    if domaine is None:
+        domaine = obtenir_domaine_actif()
+    
+    initialiser_srs(domaine)
     progression = charger_progression()
+    
+    # Obtenir le SRS du domaine
+    prog_domaine = progression['domaines'][domaine]
     
     print("\n" + "="*60)
     print("STATISTIQUES DE REPETITION ESPACEE")
     print("="*60)
     
-    if not progression['srs']['exercices']:
+    if not prog_domaine.get('srs', {}).get('exercices', {}):
         print("\nAucune donnee SRS disponible.")
         return
     
     # Compter par niveau SRS
     niveaux = {i: 0 for i in range(8)}
-    for entree in progression['srs']['exercices'].values():
+    for entree in prog_domaine['srs']['exercices'].values():
         niveaux[entree['niveau_srs']] += 1
     
-    total = len(progression['srs']['exercices'])
+    total = len(prog_domaine['srs']['exercices'])
     
     print(f"\nTotal d'exercices suivis: {total}")
     print("\nRepartition par maitrise:")
@@ -297,5 +354,5 @@ def afficher_statistiques_srs():
             print(f"  Niveau {niveau} ({labels[niveau]}): {count} ({pct:.1f}%) {barre}")
     
     # Exercices à réviser
-    a_reviser = obtenir_exercices_a_reviser()
+    a_reviser = obtenir_exercices_a_reviser(domaine)
     print(f"\nExercices a reviser aujourd'hui: {len(a_reviser)}")
