@@ -3,7 +3,17 @@ import os
 from datetime import datetime
 
 
-FICHIER_PROGRESSION = 'progression_utilisateur.json'
+def obtenir_fichier_progression():
+    """Obtient le fichier de progression selon le système d'utilisateurs"""
+    try:
+        from utilisateurs import obtenir_fichier_progression_actif
+        return obtenir_fichier_progression_actif()
+    except ImportError:
+        # Si le module utilisateurs n'est pas disponible, utiliser le fichier par défaut
+        return 'progression_utilisateur.json'
+
+
+FICHIER_PROGRESSION = obtenir_fichier_progression()
 
 
 
@@ -27,8 +37,9 @@ def initialiser_progression():
 
 def charger_progression():
     """Charge la progression depuis le fichier JSON ou crée une nouvelle progression"""
-    if os.path.exists(FICHIER_PROGRESSION):
-        with open(FICHIER_PROGRESSION, 'r', encoding='utf-8') as f:
+    fichier = obtenir_fichier_progression()
+    if os.path.exists(fichier):
+        with open(fichier, 'r', encoding='utf-8') as f:
             return json.load(f)
     else:
         return initialiser_progression()
@@ -38,8 +49,16 @@ def charger_progression():
 
 def sauvegarder_progression(progression):
     """Sauvegarde la progression dans le fichier JSON"""
-    with open(FICHIER_PROGRESSION, 'w', encoding='utf-8') as f:
-        json.dump(progression, f, indent=4, ensure_ascii=False)
+    try:
+        from gestion_erreurs import sauvegarder_json_securise
+        fichier = obtenir_fichier_progression()
+        sauvegarder_json_securise(fichier, progression, sauvegarde_backup=True)
+    except ImportError:
+        # Fallback si gestion_erreurs pas disponible
+        import json
+        fichier = obtenir_fichier_progression()
+        with open(fichier, 'w', encoding='utf-8') as f:
+            json.dump(progression, f, indent=4, ensure_ascii=False)
 
 
 
@@ -183,19 +202,23 @@ def afficher_streak():
 
 
 def ajouter_a_historique(theme, niveau, exercice, tentatives, reussi):
-    """Ajoute un exercice complété à l'historique"""
+    """Ajoute une entrée dans l'historique des exercices"""
     progression = charger_progression()
     
     if 'historique' not in progression:
         progression['historique'] = []
     
-    exercice_str = str(exercice)[:100]
+    # Extraire l'énoncé ou la question
+    if isinstance(exercice, dict):
+        exercice_text = exercice.get('question', exercice.get('enonce', str(exercice)[:50]))
+    else:
+        exercice_text = str(exercice)[:50]
     
     entree = {
         'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         'theme': theme,
         'niveau': niveau,
-        'exercice': exercice_str,
+        'exercice': exercice_text,
         'tentatives': tentatives,
         'reussi': reussi
     }
@@ -204,76 +227,74 @@ def ajouter_a_historique(theme, niveau, exercice, tentatives, reussi):
     sauvegarder_progression(progression)
 
 
-def afficher_historique(limite=10):
+def afficher_historique():
     """Affiche l'historique des derniers exercices"""
     progression = charger_progression()
     historique = progression.get('historique', [])
+    
+    print("\n" + "="*60)
+    print("HISTORIQUE DES EXERCICES")
+    print("="*60)
     
     if not historique:
         print("\nAucun exercice dans l'historique.")
         return
     
-    print("\n" + "="*80)
-    print("HISTORIQUE DES EXERCICES")
-    print("="*80)
+    # Afficher les 10 derniers exercices
+    derniers = historique[-10:]
     
-    # Afficher les derniers exercices (ordre inversé)
-    for i, entree in enumerate(reversed(historique[-limite:]), 1):
-        statut = "REUSSI" if entree['reussi'] else "PASSE"
-        print(f"\n{i}. [{entree['date']}]")
-        print(f"   Theme: {entree['theme']} | Niveau: {entree['niveau']}")
+    for i, entree in enumerate(reversed(derniers), 1):
+        statut = "✓ REUSSI" if entree['reussi'] else "✗ PASSE"
+        print(f"\n{i}. [{entree['date']}] - {statut}")
+        print(f"   Theme: {entree['theme']} (Niveau {entree['niveau']})")
         print(f"   Exercice: {entree['exercice']}")
-        print(f"   Tentatives: {entree['tentatives']} | Statut: {statut}")
-    
-    print("\n" + "="*80)
-    print(f"Total d'exercices: {len(historique)}")
-    
+        print(f"   Tentatives: {entree['tentatives']}")
+
 
 def afficher_statistiques_detaillees():
     """Affiche des statistiques détaillées basées sur l'historique"""
     progression = charger_progression()
     historique = progression.get('historique', [])
     
+    print("\n" + "="*60)
+    print("STATISTIQUES DETAILLEES")
+    print("="*60)
+    
     if not historique:
-        print("\nPas encore d'historique pour calculer des statistiques.")
+        print("\nAucune donnee disponible.")
         return
     
-    print("\n" + "="*80)
-    print("STATISTIQUES DETAILLEES")
-    print("="*80)
+    # Statistiques globales
+    total_exercices = len(historique)
+    reussis = sum(1 for e in historique if e['reussi'])
+    taux_reussite = (reussis / total_exercices) * 100
+    tentatives_moyennes = sum(e['tentatives'] for e in historique) / total_exercices
     
-    # Calculs des statistiques
-    total = len(historique)
-    reussis = sum(1 for h in historique if h['reussi'])
-    tentatives_totales = sum(h['tentatives'] for h in historique)
-    tentatives_moyennes = tentatives_totales / total if total > 0 else 0
-    taux_reussite = (reussis / total) * 100 if total > 0 else 0
+    print(f"\nSTATISTIQUES GLOBALES")
+    print(f"Total d'exercices: {total_exercices}")
+    print(f"Reussis: {reussis} ({taux_reussite:.1f}%)")
+    print(f"Tentatives moyennes: {tentatives_moyennes:.1f}")
     
     # Statistiques par thème
-    themes_stats = {}
-    for h in historique:
-        theme = h['theme']
-        if theme not in themes_stats:
-            themes_stats[theme] = {'total': 0, 'reussis': 0, 'tentatives': 0}
-        themes_stats[theme]['total'] += 1
-        if h['reussi']:
-            themes_stats[theme]['reussis'] += 1
-        themes_stats[theme]['tentatives'] += h['tentatives']
+    stats_themes = {}
+    for entree in historique:
+        theme = entree['theme']
+        if theme not in stats_themes:
+            stats_themes[theme] = {'total': 0, 'reussis': 0, 'tentatives': 0}
+        
+        stats_themes[theme]['total'] += 1
+        stats_themes[theme]['reussis'] += 1 if entree['reussi'] else 0
+        stats_themes[theme]['tentatives'] += entree['tentatives']
     
-    print(f"\nExercices totaux: {total}")
-    print(f"Exercices reussis: {reussis} ({taux_reussite:.1f}%)")
-    print(f"Tentatives moyennes par exercice: {tentatives_moyennes:.1f}")
-    
-    print("\n" + "-"*80)
-    print("STATISTIQUES PAR THEME")
-    print("-"*80)
-    
-    for theme, stats in sorted(themes_stats.items(), key=lambda x: x[1]['total'], reverse=True):
-        taux_theme = (stats['reussis'] / stats['total']) * 100 if stats['total'] > 0 else 0
-        tentatives_moy_theme = stats['tentatives'] / stats['total'] if stats['total'] > 0 else 0
+    print(f"\n\nSTATISTIQUES PAR THEME")
+    print("-" * 60)
+    for theme, stats in stats_themes.items():
+        taux = (stats['reussis'] / stats['total']) * 100
+        moy_tent = stats['tentatives'] / stats['total']
         print(f"\n{theme}:")
-        print(f"  - Exercices: {stats['total']}")
-        print(f"  - Reussis: {stats['reussis']} ({taux_theme:.1f}%)")
-        print(f"  - Tentatives moyennes: {tentatives_moy_theme:.1f}")
-    
-    print("\n" + "="*80)    
+        print(f"  Exercices: {stats['total']}")
+        print(f"  Taux de reussite: {taux:.1f}%")
+        print(f"  Tentatives moyennes: {moy_tent:.1f}")
+
+
+# Fin du fichier    
