@@ -21,6 +21,17 @@ from repetition_espacee import (
 )
 from export_import import menu_export_import
 from domaines import choisir_domaine, obtenir_nom_domaine, charger_domaines
+# Nouveaux modules d'amélioration
+from defis_quotidiens import menu_defis
+from comparaison_domaines import menu_comparaison
+from classement import menu_classement
+from quetes import menu_quetes
+from export_avance import menu_export_avance
+from themes import menu_themes
+from notifications import menu_notifications
+from mode_hors_ligne import menu_mode_hors_ligne
+from analytics import menu_analytics
+from collaboratif import menu_collaboratif
 
 progression = charger_progression()
 
@@ -112,7 +123,7 @@ if __name__ == "__main__":
     
     choix = 0
     
-    while choix != 14:
+    while choix != 24:
         # Récupérer le domaine actif pour l'affichage
         domaine_actif = obtenir_domaine_actif()
         nom_domaine = obtenir_nom_domaine(domaine_actif)
@@ -124,9 +135,35 @@ if __name__ == "__main__":
         print(f"🌍 Domaine actif : {nom_domaine} | Niveau : {niveau}")
         print("="*60)
         try:
-            choix = int(input("Veuillez choisir une option :\n0. 🌐 CHANGER DE DOMAINE\n1. Commencer les exercices\n2. Voir ma progression\n3. Voir mes badges\n4. Voir l'historique\n5. Statistiques detaillees\n6. Systeme XP et niveaux\n7. Gestion des utilisateurs\n8. Mode Revision (SRS)\n9. Exercices a reviser\n10. Stats repetition espacee\n11. Sauvegardes (Export/Import)\n12. Consulter les logs\n13. Lister tous les domaines\n14. Quitter\n\nVotre choix : "))
+            choix = int(input("Veuillez choisir une option :\n"
+                "0. 🌐 CHANGER DE DOMAINE\n"
+                "1. Commencer les exercices\n"
+                "2. Voir ma progression\n"
+                "3. Voir mes badges\n"
+                "4. Voir l'historique\n"
+                "5. Statistiques detaillees\n"
+                "6. Systeme XP et niveaux\n"
+                "7. Gestion des utilisateurs\n"
+                "8. Mode Revision (SRS)\n"
+                "9. Exercices a reviser\n"
+                "10. Stats repetition espacee\n"
+                "11. Sauvegardes (Export/Import)\n"
+                "12. Consulter les logs\n"
+                "13. Lister tous les domaines\n"
+                "14. 🎯 Defis quotidiens (NOUVEAU)\n"
+                "15. 📊 Comparaison domaines (NOUVEAU)\n"
+                "16. 🏆 Classement & Titres (NOUVEAU)\n"
+                "17. 🗺️  Quetes (NOUVEAU)\n"
+                "18. 📦 Export avance (NOUVEAU)\n"
+                "19. 🎨 Themes visuels (NOUVEAU)\n"
+                "20. 🔔 Notifications (NOUVEAU)\n"
+                "21. ✈️  Mode hors ligne (NOUVEAU)\n"
+                "22. 📈 Analytics avancees (NOUVEAU)\n"
+                "23. 🌍 Mode collaboratif (NOUVEAU)\n"
+                "24. Quitter\n\n"
+                "Votre choix : "))
         except ValueError:
-            print("Erreur : Entrez uniquement un numero (0-14)")
+            print("Erreur : Entrez uniquement un numero (0-24)")
             log_avertissement("Entree invalide dans le menu principal")
             continue
         except KeyboardInterrupt:
@@ -334,6 +371,36 @@ if __name__ == "__main__":
             input("\nAppuyez sur Entrée pour continuer...")
         
         elif choix == 14:
+            menu_defis()
+        
+        elif choix == 15:
+            menu_comparaison()
+        
+        elif choix == 16:
+            menu_classement()
+        
+        elif choix == 17:
+            menu_quetes()
+        
+        elif choix == 18:
+            menu_export_avance()
+        
+        elif choix == 19:
+            menu_themes()
+        
+        elif choix == 20:
+            menu_notifications()
+        
+        elif choix == 21:
+            menu_mode_hors_ligne()
+        
+        elif choix == 22:
+            menu_analytics()
+        
+        elif choix == 23:
+            menu_collaboratif()
+        
+        elif choix == 24:
             log_info("Application fermee normalement")
             print("\n" + "="*60)
             print("Merci d'avoir utilise l'application !")
@@ -341,6 +408,6 @@ if __name__ == "__main__":
             print("="*60)
             
         else:
-            print("Erreur : Choix invalide. Veuillez choisir entre 1 et 13.")
+            print("Erreur : Choix invalide. Veuillez choisir entre 0 et 24.")
                        
     
