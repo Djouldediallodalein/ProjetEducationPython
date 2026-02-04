@@ -1,3 +1,0 @@
-"""
-Modules - Core et Features
-"""

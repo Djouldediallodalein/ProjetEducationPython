@@ -1,3 +1,0 @@
-"""
-Features Modules - Fonctionnalités avancées
-"""
