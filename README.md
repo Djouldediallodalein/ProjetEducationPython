@@ -63,7 +63,7 @@ ProjetEducationPython/
 
 ```bash
 # Cloner le projet
-git clone https://github.com/votre-username/ProjetEducationPython.git
+git clone https://github.com/Djouldediallodalein/ProjetEducationPython.git
 cd ProjetEducationPython
 
 # Créer l'environnement virtuel
@@ -225,10 +225,10 @@ Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de
 
 ## 👨‍💻 Auteur
 
-**Votre Nom**
+**Djouldé Diallo**
 
-- GitHub: [@votre-username](https://github.com/votre-username)
-- Email: votre.email@example.com
+- GitHub: [@Djouldediallodalein](https://github.com/Djouldediallodalein)
+- Email: contact@djouldediallo.dev
 
 ---
 
@@ -245,7 +245,7 @@ Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de
 Pour toute question ou problème :
 
 1. Consultez la [documentation](docs/)
-2. Ouvrez une [Issue](https://github.com/votre-username/ProjetEducationPython/issues)
+2. Ouvrez une [Issue](https://github.com/Djouldediallodalein/ProjetEducationPython/issues)
 3. Contactez-nous par email
 
 ---
