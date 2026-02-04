@@ -20,17 +20,23 @@ FICHIER_PROGRESSION = obtenir_fichier_progression()
 def initialiser_progression():
     """Crée la structure de progression initiale pour un nouvel utilisateur"""
     return {
-        'niveau': 1,
-        'exercices_reussis': 0,
-        'exercices_totaux': 0,
-        'themes': {},
-        'exercices_completes': [],
-        'badges': [],
+        'domaine_actif': 'python',  # Domaine par défaut
+        'domaines': {
+            'python': {
+                'niveau': 1,
+                'exercices_reussis': 0,
+                'exercices_totaux': 0,
+                'themes': {},
+                'exercices_completes': [],
+                'badges': [],
+                'historique': []
+            }
+        },
         'streak_actuel': 0,
         'streak_record': 0,
         'derniere_connexion': datetime.now().strftime('%Y-%m-%d'),
         'date_creation': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        'historique': []
+        'xp_total': 0
     }
     
 
@@ -40,9 +46,88 @@ def charger_progression():
     fichier = obtenir_fichier_progression()
     if os.path.exists(fichier):
         with open(fichier, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            prog = json.load(f)
+            # Migration : si ancien format (sans domaines), migrer
+            if 'domaines' not in prog:
+                prog = migrer_vers_multi_domaines(prog)
+            return prog
     else:
         return initialiser_progression()
+
+
+def migrer_vers_multi_domaines(ancienne_prog):
+    """Migre une progression de l'ancien format vers le nouveau format multi-domaines"""
+    nouvelle_prog = initialiser_progression()
+    
+    # Copier les données de Python dans le nouveau format
+    nouvelle_prog['domaines']['python'] = {
+        'niveau': ancienne_prog.get('niveau', 1),
+        'exercices_reussis': ancienne_prog.get('exercices_reussis', 0),
+        'exercices_totaux': ancienne_prog.get('exercices_totaux', 0),
+        'themes': ancienne_prog.get('themes', {}),
+        'exercices_completes': ancienne_prog.get('exercices_completes', []),
+        'badges': ancienne_prog.get('badges', []),
+        'historique': ancienne_prog.get('historique', [])
+    }
+    
+    # Copier les données globales
+    nouvelle_prog['streak_actuel'] = ancienne_prog.get('streak_actuel', 0)
+    nouvelle_prog['streak_record'] = ancienne_prog.get('streak_record', 0)
+    nouvelle_prog['derniere_connexion'] = ancienne_prog.get('derniere_connexion', datetime.now().strftime('%Y-%m-%d'))
+    nouvelle_prog['date_creation'] = ancienne_prog.get('date_creation', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    nouvelle_prog['xp_total'] = ancienne_prog.get('xp_total', 0)
+    
+    return nouvelle_prog
+
+
+def obtenir_domaine_actif():
+    """Retourne le domaine actuellement actif"""
+    prog = charger_progression()
+    return prog.get('domaine_actif', 'python')
+
+
+def changer_domaine_actif(id_domaine):
+    """Change le domaine actif"""
+    prog = charger_progression()
+    
+    # Créer le domaine s'il n'existe pas encore
+    if id_domaine not in prog['domaines']:
+        prog['domaines'][id_domaine] = {
+            'niveau': 1,
+            'exercices_reussis': 0,
+            'exercices_totaux': 0,
+            'themes': {},
+            'exercices_completes': [],
+            'badges': [],
+            'historique': []
+        }
+    
+    prog['domaine_actif'] = id_domaine
+    sauvegarder_progression(prog)
+    return prog
+
+
+def obtenir_progression_domaine(domaine=None):
+    """Obtient la progression pour un domaine spécifique"""
+    prog = charger_progression()
+    
+    if domaine is None:
+        domaine = prog.get('domaine_actif', 'python')
+    
+    # Si le domaine n'existe pas, le créer
+    if domaine not in prog['domaines']:
+        prog['domaines'][domaine] = {
+            'niveau': 1,
+            'exercices_reussis': 0,
+            'exercices_totaux': 0,
+            'themes': {},
+            'exercices_completes': [],
+            'badges': [],
+            'historique': []
+        }
+        sauvegarder_progression(prog)
+    
+    return prog['domaines'][domaine]
 
 
 
@@ -62,50 +147,81 @@ def sauvegarder_progression(progression):
 
 
 
-def mettre_a_jour_progression(theme, reussi):
+def mettre_a_jour_progression(theme, reussi, domaine=None):
     """Met à jour la progression après un exercice"""
     progression = charger_progression()
     
-    # Mise à jour des compteurs globaux
-    progression['exercices_totaux'] += 1
+    # Obtenir le domaine actif
+    if domaine is None:
+        domaine = progression.get('domaine_actif', 'python')
+    
+    # S'assurer que le domaine existe
+    if domaine not in progression['domaines']:
+        progression['domaines'][domaine] = {
+            'niveau': 1,
+            'exercices_reussis': 0,
+            'exercices_totaux': 0,
+            'themes': {},
+            'exercices_completes': [],
+            'badges': [],
+            'historique': []
+        }
+    
+    prog_domaine = progression['domaines'][domaine]
+    
+    # Mise à jour des compteurs du domaine
+    prog_domaine['exercices_totaux'] += 1
     if reussi:
-        progression['exercices_reussis'] += 1
+        prog_domaine['exercices_reussis'] += 1
     
     # Mise à jour par thème
-    if theme not in progression['themes']:
-        progression['themes'][theme] = {'reussis': 0, 'totaux': 0}
+    if theme not in prog_domaine['themes']:
+        prog_domaine['themes'][theme] = {'reussis': 0, 'totaux': 0}
     
-    progression['themes'][theme]['totaux'] += 1
+    prog_domaine['themes'][theme]['totaux'] += 1
     if reussi:
-        progression['themes'][theme]['reussis'] += 1
+        prog_domaine['themes'][theme]['reussis'] += 1
     
     # Augmentation du niveau tous les 5 exercices réussis
-    if progression['exercices_reussis'] % 5 == 0 and reussi:
-        progression['niveau'] += 1
-        print(f"\nNIVEAU SUPÉRIEUR ! Vous êtes maintenant au niveau {progression['niveau']} !")
+    if prog_domaine['exercices_reussis'] % 5 == 0 and reussi:
+        prog_domaine['niveau'] += 1
+        print(f"\nNIVEAU SUPÉRIEUR ! Vous êtes maintenant au niveau {prog_domaine['niveau']} !")
     
     sauvegarder_progression(progression)
     return progression
 
 
 
-def afficher_progression():
+def afficher_progression(domaine=None):
     """Affiche les statistiques de progression de l'utilisateur"""
     progression = charger_progression()
     
-
-    print("VOTRE PROGRESSION")
-    print(f"Niveau actuel : {progression['niveau']}")
-    print(f"Exercices réussis : {progression['exercices_reussis']}/{progression['exercices_totaux']}")
+    if domaine is None:
+        domaine = progression.get('domaine_actif', 'python')
     
-    if progression['exercices_totaux'] > 0:
-        taux = (progression['exercices_reussis'] / progression['exercices_totaux']) * 100
+    prog_domaine = obtenir_progression_domaine(domaine)
+    
+    # Obtenir le nom du domaine
+    try:
+        from domaines import obtenir_nom_domaine
+        nom_domaine = obtenir_nom_domaine(domaine)
+    except:
+        nom_domaine = domaine.upper()
+
+    print(f"\nVOTRE PROGRESSION - {nom_domaine}")
+    print("="*50)
+    print(f"Niveau actuel : {prog_domaine['niveau']}")
+    print(f"Exercices réussis : {prog_domaine['exercices_reussis']}/{prog_domaine['exercices_totaux']}")
+    
+    if prog_domaine['exercices_totaux'] > 0:
+        taux = (prog_domaine['exercices_reussis'] / prog_domaine['exercices_totaux']) * 100
         print(f"Taux de réussite : {taux:.1f}%")
 
-    print("ROGRESSION PAR THÈME")
+    print("\nPROGRESSION PAR THÈME")
+    print("="*50)
     
-    if progression['themes']:
-        for theme, stats in progression['themes'].items():
+    if prog_domaine['themes']:
+        for theme, stats in prog_domaine['themes'].items():
             taux_theme = (stats['reussis'] / stats['totaux']) * 100 if stats['totaux'] > 0 else 0
             print(f"{theme} : {stats['reussis']}/{stats['totaux']} ({taux_theme:.0f}%)")
     else:
@@ -114,22 +230,43 @@ def afficher_progression():
         
 
 
-def marquer_exercice_complete(theme, niveau, exercice):
+def marquer_exercice_complete(theme, niveau, exercice, domaine=None):
     """Marque un exercice comme complété pour éviter de le reproposer"""
     progression = charger_progression()
     
-    if 'exercices_completes' not in progression:
-        progression['exercices_completes'] = []
+    if domaine is None:
+        domaine = progression.get('domaine_actif', 'python')
+    
+    prog_domaine = obtenir_progression_domaine(domaine)
+    
+    if 'exercices_completes' not in prog_domaine:
+        prog_domaine['exercices_completes'] = []
     
     exercice_str = str(exercice)[:50]
     identifiant = f"{theme}|{niveau}|{exercice_str}"
     
-    if identifiant not in progression['exercices_completes']:
-        progression['exercices_completes'].append(identifiant)
+    if identifiant not in prog_domaine['exercices_completes']:
+        prog_domaine['exercices_completes'].append(identifiant)
+        progression['domaines'][domaine] = prog_domaine
         sauvegarder_progression(progression)
 
 
-def est_exercice_complete(theme, niveau, exercice):
+def est_exercice_complete(theme, niveau, exercice, domaine=None):
+    """Vérifie si un exercice a déjà été complété"""
+    progression = charger_progression()
+    
+    if domaine is None:
+        domaine = progression.get('domaine_actif', 'python')
+    
+    prog_domaine = obtenir_progression_domaine(domaine)
+    
+    if 'exercices_completes' not in prog_domaine:
+        return False
+    
+    exercice_str = str(exercice)[:50]
+    identifiant = f"{theme}|{niveau}|{exercice_str}"
+    
+    return identifiant in prog_domaine['exercices_completes']
     """Vérifie si un exercice a déjà été complété"""
     progression = charger_progression()
     

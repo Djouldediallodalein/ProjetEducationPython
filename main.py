@@ -7,7 +7,8 @@ from gestion_erreurs import (
 from fonctions import generer_exercice, verifier_reponse, analyser_verdict, choisir_theme, afficher_qcm
 from progression import (charger_progression, mettre_a_jour_progression, afficher_progression, 
                         marquer_exercice_complete, mettre_a_jour_streak, afficher_streak,
-                        ajouter_a_historique, afficher_historique, afficher_statistiques_detaillees)
+                        ajouter_a_historique, afficher_historique, afficher_statistiques_detaillees,
+                        obtenir_domaine_actif, changer_domaine_actif, obtenir_progression_domaine)
 from avancees import verifier_nouveaux_badges, afficher_badges, suggerer_theme_revision
 from xp_systeme import calculer_xp, ajouter_xp, afficher_info_xp, afficher_details_xp_gagne
 from utilisateurs import (
@@ -19,10 +20,14 @@ from repetition_espacee import (
     afficher_exercices_a_reviser, mode_revision, afficher_statistiques_srs
 )
 from export_import import menu_export_import
+from domaines import choisir_domaine, obtenir_nom_domaine, charger_domaines
 
 progression = charger_progression()
 
-niveau = progression['niveau']
+# Obtenir le domaine actif
+domaine_actif = obtenir_domaine_actif()
+prog_domaine = obtenir_progression_domaine(domaine_actif)
+niveau = prog_domaine['niveau']
 
     
 if __name__ == "__main__":
@@ -74,10 +79,15 @@ if __name__ == "__main__":
         except (ValueError, Exception) as e:
             print("\nContinuation en mode classique...")
     
-    print("\nBienvenue dans l'apprentissage Python par exercices !")
+    print("\nBienvenue dans l'apprentissage universel par exercices !")
     if utilisateur_actif:
         print(f"Utilisateur connecte : {utilisateur_actif}")
-    print("L'objectif est d'apprendre Python en resolvant des exercices par theme.")
+    
+    # Afficher le domaine actif
+    domaine_actif = obtenir_domaine_actif()
+    nom_domaine = obtenir_nom_domaine(domaine_actif)
+    print(f"Domaine d'apprentissage : {nom_domaine}")
+    print("L'objectif est d'apprendre en resolvant des exercices par theme.")
     print("="*60)
     
     # Mise à jour et affichage du streak
@@ -102,13 +112,21 @@ if __name__ == "__main__":
     
     choix = 0
     
-    while choix != 13:
+    while choix != 14:
+        # Récupérer le domaine actif pour l'affichage
+        domaine_actif = obtenir_domaine_actif()
+        nom_domaine = obtenir_nom_domaine(domaine_actif)
+        prog_domaine = obtenir_progression_domaine(domaine_actif)
+        niveau = prog_domaine['niveau']
+        
         print("\nMENU PRINCIPAL")
         print("="*60)
+        print(f"🌍 Domaine actif : {nom_domaine} | Niveau : {niveau}")
+        print("="*60)
         try:
-            choix = int(input("Veuillez choisir une option :\n1. Commencer les exercices\n2. Voir ma progression\n3. Voir mes badges\n4. Voir l'historique\n5. Statistiques detaillees\n6. Systeme XP et niveaux\n7. Gestion des utilisateurs\n8. Mode Revision (SRS)\n9. Exercices a reviser\n10. Stats repetition espacee\n11. Sauvegardes (Export/Import)\n12. Consulter les logs\n13. Quitter\n\nVotre choix : "))
+            choix = int(input("Veuillez choisir une option :\n0. 🌐 CHANGER DE DOMAINE\n1. Commencer les exercices\n2. Voir ma progression\n3. Voir mes badges\n4. Voir l'historique\n5. Statistiques detaillees\n6. Systeme XP et niveaux\n7. Gestion des utilisateurs\n8. Mode Revision (SRS)\n9. Exercices a reviser\n10. Stats repetition espacee\n11. Sauvegardes (Export/Import)\n12. Consulter les logs\n13. Lister tous les domaines\n14. Quitter\n\nVotre choix : "))
         except ValueError:
-            print("Erreur : Entrez uniquement un numero (1-13)")
+            print("Erreur : Entrez uniquement un numero (0-14)")
             log_avertissement("Entree invalide dans le menu principal")
             continue
         except KeyboardInterrupt:
@@ -116,8 +134,26 @@ if __name__ == "__main__":
             log_info("Application interrompue par l'utilisateur")
             break
         
-        if choix == 1:
-            theme = choisir_theme()
+        if choix == 0:
+            # Changer de domaine
+            print("\n" + "="*70)
+            id_domaine, info_domaine = choisir_domaine()
+            if id_domaine:
+                changer_domaine_actif(id_domaine)
+                domaine_actif = id_domaine
+                nom_domaine = obtenir_nom_domaine(domaine_actif)
+                print(f"\n✅ Domaine changé : {nom_domaine}")
+                log_info(f"Changement de domaine : {id_domaine}")
+            else:
+                print("\nAucun changement effectué.")
+        
+        elif choix == 1:
+            # Obtenir le domaine actif
+            domaine_actif = obtenir_domaine_actif()
+            prog_domaine = obtenir_progression_domaine(domaine_actif)
+            niveau = prog_domaine['niveau']
+            
+            theme = choisir_theme(domaine_actif)
             
             if theme is None:
                 print("Retour au menu principal...")
@@ -127,7 +163,7 @@ if __name__ == "__main__":
             print("EXERCICE")
             print("="*60)
             
-            exercice = generer_exercice(niveau, theme)
+            exercice = generer_exercice(niveau, theme, domaine_actif)
             
             # Vérifier le type d'exercice
             if isinstance(exercice, dict) and exercice.get('type') == 'qcm':
@@ -190,7 +226,7 @@ if __name__ == "__main__":
                     print("\n" + "="*60)
                     print("VERIFICATION")
                     print("="*60)
-                    verification = verifier_reponse(enonce, solution)
+                    verification = verifier_reponse(enonce, solution, domaine_actif)
                     print(verification)
                     
                     avancement = analyser_verdict(verification)
@@ -215,7 +251,7 @@ if __name__ == "__main__":
             enregistrer_revision(theme, niveau, exercice, avancement, tentatives)
             
             if avancement:
-                marquer_exercice_complete(theme, niveau, exercice)
+                marquer_exercice_complete(theme, niveau, exercice, domaine_actif)
                 
                 # Calculer et ajouter l'XP
                 progression_actuelle = charger_progression()
@@ -239,10 +275,11 @@ if __name__ == "__main__":
                     print(f"NIVEAU SUPERIEUR ! Vous etes maintenant au niveau {niveau_apres} !")
                     print("="*60)
             
-            mettre_a_jour_progression(theme, avancement)
-            
+            mettre_a_jour_progression(theme, avancement, domaine_actif)
+        
         elif choix == 2:
-            afficher_progression()
+            domaine_actif = obtenir_domaine_actif()
+            afficher_progression(domaine_actif)
             
         elif choix == 3:
             afficher_badges()
@@ -273,8 +310,30 @@ if __name__ == "__main__":
             
         elif choix == 12:
             menu_logs()
-            
+        
         elif choix == 13:
+            # Lister tous les domaines disponibles
+            print("\n" + "="*70)
+            print("🌍 DOMAINES DISPONIBLES".center(70))
+            print("="*70)
+            domaines = charger_domaines()
+            domaines_tries = sorted(domaines.items(), key=lambda x: x[1].get('popularite', 99))
+            
+            for i, (id_dom, info) in enumerate(domaines_tries, 1):
+                emoji = info.get('emoji', '📚')
+                nom = info['nom']
+                type_dom = info.get('type', 'Divers')
+                description = info.get('description', '')
+                nb_themes = len(info.get('themes', []))
+                print(f"\n{i}. {emoji} {nom}")
+                print(f"   Type : {type_dom}")
+                print(f"   Description : {description}")
+                print(f"   Thèmes disponibles : {nb_themes}")
+            
+            print("\n" + "="*70)
+            input("\nAppuyez sur Entrée pour continuer...")
+        
+        elif choix == 14:
             log_info("Application fermee normalement")
             print("\n" + "="*60)
             print("Merci d'avoir utilise l'application !")

@@ -1,0 +1,72 @@
+{
+    "domaine_actif": "python",
+    "domaines": {
+        "python": {
+            "niveau": 2,
+            "exercices_reussis": 9,
+            "exercices_totaux": 14,
+            "themes": {
+                "Variables et types de données": {
+                    "reussis": 5,
+                    "totaux": 9
+                },
+                "Conditions (if/elif/else)": {
+                    "reussis": 0,
+                    "totaux": 1
+                },
+                "Test": {
+                    "reussis": 2,
+                    "totaux": 2
+                },
+                "Test Python": {
+                    "reussis": 2,
+                    "totaux": 2
+                }
+            },
+            "exercices_completes": [
+                "Variables et types de données|1|Créez une variable nommée 'age' et affectez-lui vo",
+                "Variables|1|{'type': 'qcm', 'question': 'Test'}",
+                "Variables et types de données|1|{'type': 'qcm', 'question': 'Quel est le type de d",
+                "Variables et types de données|1|{'type': 'code', 'enonce': \"Créez une variable nom",
+                "Variables et types de données|1|{'type': 'qcm', 'question': 'Quelle est la valeur ",
+                "Test|1|exercice_test"
+            ],
+            "badges": [
+                "premier_pas",
+                "debutant"
+            ],
+            "historique": [
+                {
+                    "date": "2026-02-04 09:20:01",
+                    "theme": "Conditions (if/elif/else)",
+                    "niveau": 2,
+                    "exercice": "Écrivez un programme qui affiche 'Positif', 'Négatif' ou 'Zéro' selon un nombre.",
+                    "tentatives": 3,
+                    "reussi": false
+                }
+            ]
+        },
+        "java": {
+            "niveau": 1,
+            "exercices_reussis": 1,
+            "exercices_totaux": 1,
+            "themes": {
+                "Test Java": {
+                    "reussis": 1,
+                    "totaux": 1
+                }
+            },
+            "exercices_completes": [],
+            "badges": [],
+            "historique": []
+        }
+    },
+    "streak_actuel": 1,
+    "streak_record": 1,
+    "derniere_connexion": "2026-02-04",
+    "date_creation": "2026-02-03 19:51:39",
+    "xp_total": 0,
+    "srs": {
+        "exercices": {}
+    }
+}
