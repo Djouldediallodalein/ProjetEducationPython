@@ -43,4 +43,9 @@ Thumbs.db
 *.sqlite
 
 # Logs
+logs/
+backend/logs/
 *.log
+
+# Backups
+*.backup
